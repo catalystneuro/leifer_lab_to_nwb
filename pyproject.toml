@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[project]
+name = "leifer-lab-to-nwb"
+version="0.1.0"
+authors = [
+  { name="Cody Baker", email="cody.baker@catalystneuro.com" },
+]
+description = """Conversion scripts for the Leifer lab.
+
+Includes the publication Neural signal propagation atlas of Caenorhabditis elegans (Nature, 2023).
+"""
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "license.txt"}
+
+keywords = ["leifer", "C elegans", "NWB", "conversion", "open data", "microscopy"]
+
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: BSD License",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+]
+
+dependencies = [
+    "neuroconv"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/catalystneuro/leifer-lab-to-nwb"
+"Bug Tracker" = "https://github.com/catalystneuro/leifer-lab-to-nwb/issues"
+
+[tool.black]
+line-length = 120
+target-version = ["py310", "py311"]
+include = "\.pyi?$"
+extend-exclude = """
+/(
+  \.toml
+  |\.yml
+  |\.txt
+  |\.sh
+  |\.git
+  |\.ini
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+"""
+
+[tool.isort]
+profile = "black"
+reverse_relative = true
+known_first_party = ["leifer_lab_to_nwb"]
