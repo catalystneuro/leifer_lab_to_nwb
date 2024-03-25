@@ -1,10 +1,10 @@
 """Specific class for reading raw imaging data from the binary files of the pumpprobe format from the Leifer lab."""
 
-from typing import Union, Literal
+from typing import Literal, Union
 
+from neuroconv.datainterfaces.ophys.baseimagingextractorinterface import \
+    BaseImagingExtractorInterface
 from pynwb import NWBFile
-
-from neuroconv.datainterfaces.ophys.baseimagingextractorinterface import BaseImagingExtractorInterface
 
 
 class OnePhotonSeriesInterface(BaseImagingExtractorInterface):

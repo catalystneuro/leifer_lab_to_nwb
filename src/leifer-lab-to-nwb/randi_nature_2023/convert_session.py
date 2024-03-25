@@ -1,10 +1,10 @@
-import pathlib
 import datetime
+import pathlib
+
 from dateutil import tz
-
+from leifer_lab_to_nwb.randi_nature_2023.interfaces import \
+    OnePhotonSeriesInterface
 from neuroconv import ConverterPipe
-
-from leifer_lab_to_nwb.randi_nature_2023.interfaces import OnePhotonSeriesInterface
 
 # Define base folder of source data
 base_folder_path = pathlib.Path("E:/Leifer")
