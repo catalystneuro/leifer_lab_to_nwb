@@ -1,9 +1,8 @@
 from typing import Union
 
+import ndx_multichannel_volume
 import neuroconv
 import pynwb
-
-import ndx_multichannel_volume
 
 
 class RandiNature2023Converter(neuroconv.ConverterPipe):
