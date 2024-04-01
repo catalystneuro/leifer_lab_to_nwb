@@ -1,7 +1,7 @@
-import pathlib
 import datetime
-from dateutil import tz
+import pathlib
 
+from dateutil import tz
 from neuroconv import ConverterPipe
 
 from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
@@ -9,6 +9,7 @@ from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
     ExtraOphysMetadataInterface,
     OptogeneticStimulationInterface,
 )
+
 
 # Define base folder of source data
 base_folder_path = pathlib.Path("E:/Leifer")
