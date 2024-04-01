@@ -1,11 +1,11 @@
 import pathlib
 from typing import Union
 
+import ndx_patterned_ogen
+import neuroconv
 import numpy
 import pandas
-import neuroconv
 import pynwb
-import ndx_patterned_ogen
 from pydantic import DirectoryPath
 
 

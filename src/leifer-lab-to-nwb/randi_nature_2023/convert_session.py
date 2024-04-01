@@ -8,11 +8,10 @@ from dateutil import tz
 
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
-    OnePhotonSeriesInterface,
     ExtraOphysMetadataInterface,
+    OnePhotonSeriesInterface,
     OptogeneticStimulationInterface,
 )
-
 
 # Define base folder of source data
 base_folder_path = pathlib.Path("E:/Leifer")

@@ -1,4 +1,4 @@
-from typing import Tuple, Literal, Union, Iterable
+from typing import Iterable, Literal, Tuple, Union
 
 import numpy
 from pydantic import FilePath
