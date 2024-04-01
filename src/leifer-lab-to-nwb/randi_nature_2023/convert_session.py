@@ -5,11 +5,10 @@ from dateutil import tz
 from neuroconv import ConverterPipe
 
 from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
-    OnePhotonSeriesInterface,
     ExtraOphysMetadataInterface,
+    OnePhotonSeriesInterface,
     OptogeneticStimulationInterface,
 )
-
 
 # Define base folder of source data
 base_folder_path = pathlib.Path("E:/Leifer")

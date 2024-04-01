@@ -3,9 +3,11 @@ from typing import Union
 
 import numpy
 import pandas
+from neuroconv.datainterfaces.ophys.baseimagingextractorinterface import (
+    BaseImagingExtractorInterface,
+)
 from pydantic import DirectoryPath
 from pynwb import NWBFile
-from neuroconv.datainterfaces.ophys.baseimagingextractorinterface import BaseImagingExtractorInterface
 
 
 class OnePhotonSeriesInterface(BaseImagingExtractorInterface):
