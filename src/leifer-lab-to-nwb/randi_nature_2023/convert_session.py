@@ -4,7 +4,11 @@ from dateutil import tz
 
 from neuroconv import ConverterPipe
 
-from leifer_lab_to_nwb.randi_nature_2023.interfaces import OnePhotonSeriesInterface
+from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
+    OnePhotonSeriesInterface,
+    ExtraOphysMetadataInterface,
+    OptogeneticStimulationInterface,
+)
 
 # Define base folder of source data
 base_folder_path = pathlib.Path("E:/Leifer")
@@ -19,7 +23,8 @@ session_start_time = session_start_time.replace(tzinfo=tz.gettz("US/Eastern"))
 
 
 # Define specific paths for interfaces and output
-raw_data_file_path = pumpprobe_folder_path / "raw" / "sCMOS_Frames_U16_1024x512.dat"
+raw_pumpprobe_folder_path = pumpprobe_folder_path / "raw"
+raw_data_file_path = raw_pumpprobe_folder_path / "sCMOS_Frames_U16_1024x512.dat"
 
 nwbfile_path = base_folder_path / "nwbfiles" / f"{session_string}.nwb"
 
@@ -27,8 +32,14 @@ nwbfile_path = base_folder_path / "nwbfiles" / f"{session_string}.nwb"
 # Initialize interfaces
 data_interfaces = list()
 
-one_photon_series_interface = OnePhotonSeriesInterface(file_path=raw_data_file_path)
+one_photon_series_interface = OnePhotonSeriesInterface(folder_path=raw_pumpprobe_folder_path)
 data_interfaces.append(one_photon_series_interface)
+
+extra_ophys_metadata_interface = ExtraOphysMetadataInterface(folder_path=raw_pumpprobe_folder_path)
+data_interfaces.append(extra_ophys_metadata_interface)
+
+optogenetic_stimulation_interface = OptogeneticStimulationInterface(folder_path=raw_pumpprobe_folder_path)
+data_interfaces.append(optogenetic_stimulation_interface)
 
 # Initialize converter
 converter = ConverterPipe(data_interfaces=data_interfaces)
