@@ -101,7 +101,7 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
         )
         nwbfile.add_lab_meta_data(temporal_focusing)
 
-        # targets = list()
+        # TODO: utilize objective registration
         # for index,
         #     target = OptogeneticStimulusTarget(name=f"Target{index}", targeted_rois=targeted_rois_1)
         #     targets.append(target)

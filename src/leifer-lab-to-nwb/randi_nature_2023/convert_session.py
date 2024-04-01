@@ -1,9 +1,12 @@
+"""Main conversion script for a single session of data for the Randi et al. Nature 2023 paper."""
+
 import datetime
 import pathlib
 
+import pandas
 from dateutil import tz
-from neuroconv import ConverterPipe
 
+from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
     OnePhotonSeriesInterface,
     ExtraOphysMetadataInterface,
@@ -43,10 +46,18 @@ optogenetic_stimulation_interface = OptogeneticStimulationInterface(folder_path=
 data_interfaces.append(optogenetic_stimulation_interface)
 
 # Initialize converter
-converter = ConverterPipe(data_interfaces=data_interfaces)
+converter = RandiNature2023Converter(data_interfaces=data_interfaces)
 
 metadata = converter.get_metadata()
 
 metadata["NWBFile"]["session_start_time"] = session_start_time
+
+metadata["Subject"]["subject_id"] = session_start_time.strftime("%y%m%d")  # TODO: hopefully come up with better ID
+metadata["Subject"]["species"] = "C. elegans"
+metadata["Subject"]["sex"] = "XX"  # TODO: pull from global listing by subject
+metadata["Subject"]["age"] = "P1D"  # TODO: request
+metadata["Subject"]["growth_stage_time"] = pandas.Timedelta(hours=2, minutes=30).isoformat()  # TODO: request
+metadata["Subject"]["growth_stage"] = "YA"  # TODO: request
+metadata["Subject"]["cultivation_temp"] = "20."  # TODO: request, schema says in units Celsius
 
 converter.run_conversion(nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True)
