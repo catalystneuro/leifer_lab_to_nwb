@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/leifer-lab-to-nwb"]
+
 [project]
 name = "leifer-lab-to-nwb"
 version="0.1.0"
@@ -44,7 +47,7 @@ dependencies = [
 line-length = 120
 target-version = ["py310", "py311"]
 include = '\.pyi?$'
-extend-exclude = """
+extend-exclude = '''
 /(
   \.toml
   |\.yml
@@ -59,7 +62,7 @@ extend-exclude = """
   | build
   | dist
 )/
-"""
+'''
 
 [tool.isort]
 profile = "black"
