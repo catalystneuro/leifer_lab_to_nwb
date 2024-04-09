@@ -38,7 +38,7 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
 
         volume_height_units = self.z_scan["volumeHeightUnits"]
         assert self.z_scan["volumeHeightUnits"] == "um", (
-            f"Found an occurence of field 'volumeHeightUnits' in file '{self.z_scan_file_path}' that is not "
+            f"Found an occurrence of field 'volumeHeightUnits' in file '{self.z_scan_file_path}' that is not "
             f"'um' (value is '{volume_height_units}' instead)."
         )
         um_per_depth = self.z_scan["volumeHeight"]  # TODO: Should it be this or V/um?
@@ -102,7 +102,7 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
         }
 
         # TODO: unpack frameSync content, likely as several TimeSeries with same timestamps as volumetric photon series
-        # Wil require some reshaping into the volumes since these are flattened frames
+        # Will require some reshaping into the volumes since these are flattened frames
 
         # volume_scanning_table = pynwb.file.DynamicTable(
         #     name="Piezo", description="Custom parameterizations of the volume scanning device."
