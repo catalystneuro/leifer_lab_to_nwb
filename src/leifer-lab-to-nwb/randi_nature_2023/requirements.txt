@@ -1,0 +1,4 @@
+neuroconv==0.4.8  # TODO, when propagated, add [ophys_binary]
+roiextractors==0.5.6
+ndx-patterned-ogen @ git+https://github.com/catalystneuro/ndx-patterned-ogen.git@1880684f33c220c502283dba88a458739df9174e
+ndx-multichannel-volume==0.1.12
