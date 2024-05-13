@@ -37,7 +37,7 @@ data_interfaces = list()
 
 # subject_interface = SubjectInterface(file_path=logbook_file_path, session_id=session_string)
 
-#one_photon_series_interface = OnePhotonSeriesInterface(folder_path=raw_pumpprobe_folder_path)
+# one_photon_series_interface = OnePhotonSeriesInterface(folder_path=raw_pumpprobe_folder_path)
 
 extra_ophys_metadata_interface = ExtraOphysMetadataInterface(folder_path=raw_pumpprobe_folder_path)
 

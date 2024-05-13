@@ -1,10 +1,10 @@
 import json
 import pathlib
 
+import ndx_multichannel_volume
 import neuroconv
 import pandas
 import pynwb
-import ndx_multichannel_volume
 from pydantic import FilePath
 
 
@@ -28,19 +28,19 @@ class SubjectInterface(neuroconv.BaseDataInterface):
             self.logbook = io.readlines()
 
     def add_to_nwbfile(self, nwbfile: pynwb.NWBFile):
-        session_id = self.source_data['session_id']
+        session_id = self.source_data["session_id"]
 
         logbook_growth_stage_mapping = {
             "L4": "L4",
             "young adult": "YA",
-            "L4/ya": "YA", # TODO: consult them on how to handle this case
+            "L4/ya": "YA",  # TODO: consult them on how to handle this case
         }
 
         subject_start_line = self.logbook
 
         subject = ndx_multichannel_volume.CElegansSubject(
             subject_id=session_id,  # Sessions are effectively defined by the subject number on that day
-            description="", # TODO: find something from paper
+            description="",  # TODO: find something from paper
             species="Caenorhabditis elegans",
             growth_stage=logbook_growth_stage_mapping[growth_stage],
             strain=strain,

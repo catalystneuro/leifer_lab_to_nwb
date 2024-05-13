@@ -46,9 +46,8 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
                     # Referred to in file as 'piezo' but it's really the ETL
                     data=self.sync_table["Piezo position (V)"] / volt_per_um,
                 )
-            ]
+            ],
         )
-
 
         # zScan contents
 
