@@ -30,22 +30,25 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
         self.sync_table_file_path = folder_path / "other-frameSynchronous.txt"
         self.sync_table = pandas.read_table(filepath_or_buffer=self.sync_table_file_path, index_col=False)
 
-    def get_metadata(self) -> dict:
-        metadata = super().get_metadata("OnePhotonSeries")
-
-        # Hardcoded in https://github.com/leiferlab/wormdatamodel/blob/282e780bc3c473791cc8d3b3fe9a18cee3c70e62/wormdatamodel/data/recording.py#L29
-        um_per_pixel = 0.42
-
-        volume_height_units = self.z_scan["volumeHeightUnits"]
-        assert self.z_scan["volumeHeightUnits"] == "um", (
-            f"Found an occurrence of field 'volumeHeightUnits' in file '{self.z_scan_file_path}' that is not "
-            f"'um' (value is '{volume_height_units}' instead)."
-        )
-        um_per_depth = self.z_scan["volumeHeight"]  # TODO: Should it be this or V/um?
-
-        metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_depth)
-
     def add_to_nwbfile(self, nwbfile: pynwb.NWBFile):
+        # Plane depths
+        volt_per_um = 0.125  # Hardcoded value by the lab
+        depth_in_um_per_pixel = 0.42  # Hardcoded value by the lab
+        frame_depth_table = pynwb.file.DynamicTable(
+            name="FrameDepths",
+            description=(
+                "Each frame was acquired at a different depth as tracked by the voltage supplied to an "
+                "Electrically Tunable Lense (ETL)."
+            ),
+            columns=[
+                pynwb.file.VectorData(
+                    name="depth_in_um",
+                    # Referred to in file as 'piezo' but it's really the ETL
+                    data=self.sync_table["Piezo position (V)"] / volt_per_um,
+                )
+            ],
+        )
+
         # zScan contents
 
         # Mapping from source names to NWB style (verbose snake case)
@@ -74,7 +77,7 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
         }
 
         volume_scanning_table = pynwb.file.DynamicTable(
-            name="VolumeScanningDetails", description="Custom parameterizations of the volume scanning device."
+            name="VolumeScanningConfiguration", description="Custom parameterizations of the volume scanning device."
         )
         for name, description in volume_scanning_column_descriptions.items():
             volume_scanning_table.add_column(name=name, description=description)

@@ -15,9 +15,9 @@ class BinaryImagingExtractor(ImagingExtractor):
         file_path: FilePath,
         dtype: str,
         shape: Tuple[int, int, int],
-        starting_time: Union[float, None] = None,
-        sampling_frequency: Union[float, None] = None,
-        timestamps: Union[Iterable[float], None] = None,
+        starting_time: float | None = None,
+        sampling_frequency: float | None = None,
+        timestamps: Iterable[float] | None = None,
         offset: int = 0,
         order: Literal["C", "F"] = "C",
     ) -> None:
