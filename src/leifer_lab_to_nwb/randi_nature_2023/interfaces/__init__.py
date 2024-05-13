@@ -3,3 +3,11 @@
 from ._extra_ophys_metadata import ExtraOphysMetadataInterface
 from ._onephotonseries import OnePhotonSeriesInterface
 from ._optogenetic_stimulation import OptogeneticStimulationInterface
+from ._logbook_metadata import SubjectInterface
+
+__all__ = [
+    "ExtraOphysMetadataInterface",
+    "OnePhotonSeriesInterface",
+    "OptogeneticStimulationInterface",
+    "SubjectInterface",
+]
