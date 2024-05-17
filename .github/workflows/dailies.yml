@@ -8,7 +8,7 @@ on:
 jobs:
 
   run-daily-tests:
-    uses: catalystneuro/leifer-lab-to-nwb/.github/workflows/testing.yml@main
+    uses: .github/workflows/testing.yml@main
 
   notify:
     runs-on: ubuntu-latest
