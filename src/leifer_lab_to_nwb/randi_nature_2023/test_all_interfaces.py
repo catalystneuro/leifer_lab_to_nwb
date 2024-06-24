@@ -39,12 +39,12 @@ session_start_time = session_start_time.replace(tzinfo=tz.gettz("US/Eastern"))
 interfaces_classes_to_test = {
     "PumpProbeImagingInterfaceGreen": {
         "class": PumpProbeImagingInterface,
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "GreenChannel"},
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
         "conversion_options": {"stub_test": True},
     },
     "PumpProbeImagingInterfaceRed": {
         "class": PumpProbeImagingInterface,
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "RedChannel"},
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
         "conversion_options": {"stub_test": True},
     },
     # "NeuroPALImagingInterface": {
@@ -52,7 +52,14 @@ interfaces_classes_to_test = {
     #     "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
     #     "conversion_options": {"stub_test": True},
     # },
-    # PumpProbeSegmentationInterface: {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+    "PumpProbeSegmentationInterface": {
+        "class": PumpProbeSegmentationInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
+    },
+    "PumpProbeSegmentationInterface": {
+        "class": PumpProbeSegmentationInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
+    },
     # NeuroPALSegmentationInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
     # "OptogeneticStimulationInterface": {
     #     "class": OptogeneticStimulationInterface,

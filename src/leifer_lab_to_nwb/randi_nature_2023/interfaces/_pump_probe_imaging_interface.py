@@ -9,10 +9,10 @@ import pandas
 import pynwb
 from pydantic import DirectoryPath
 
-_DEFAULT_CHANNEL_NAMES = ["GreenChannel", "RedChannel"]
+_DEFAULT_CHANNEL_NAMES = ["Green", "Red"]
 _DEFAULT_CHANNEL_FRAME_SLICING = {
-    "GreenChannel": (slice(0, 512), slice(0, 512)),
-    "RedChannel": (slice(512, 1024), slice(0, 512)),
+    "Green": (slice(0, 512), slice(0, 512)),
+    "Red": (slice(512, 1024), slice(0, 512)),
 }
 
 
@@ -49,7 +49,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
                 f"A custom `optical_channel_name` was specified ('{channel_name}') and was not one of the "
                 f"known defaults ('{_DEFAULT_CHANNEL_NAMES}'), but no frame slicing pattern was passed."
             )
-            raise ValueError(messag=message)
+            raise ValueError(message=message)
 
         self.channel_name = channel_name
         self.channel_frame_slicing = channel_frame_slicing or _DEFAULT_CHANNEL_FRAME_SLICING[channel_name]
