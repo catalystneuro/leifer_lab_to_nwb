@@ -43,13 +43,13 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
     ) -> None:
         assert "Microscope" in nwbfile.devices, (
             "The `Microscope` must be added before this interface! Make sure the call to "
-            "`.run_conversion` for this interface occurs after the `OnePhotonSeriesInterface`."
+            "`.run_conversion` for this interface occurs after the `PumpProbeImagingInterface`."
         )
         microscope = nwbfile.devices["Microscope"]
 
         assert "PlaneSegmentation" in nwbfile.processing["ophys"], (
             "The `PlaneSegmentation` must be added before this interface! Make sure the call to "
-            "`.run_conversion` for this interface occurs after the `OnePhotonSeriesInterface`."
+            "`.run_conversion` for this interface occurs after the `PumpProbeImagingInterface`."
         )
         plane_segmentation = nwbfile.processing["ophys"]["PlaneSegmentation"]
 

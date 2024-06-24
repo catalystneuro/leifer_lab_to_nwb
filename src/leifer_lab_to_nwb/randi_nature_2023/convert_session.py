@@ -9,8 +9,8 @@ from dateutil import tz
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
     ExtraOphysMetadataInterface,
-    OnePhotonSeriesInterface,
     OptogeneticStimulationInterface,
+    PumpProbeImagingInterface,
     SubjectInterface,
 )
 
@@ -30,38 +30,41 @@ raw_pumpprobe_folder_path = pumpprobe_folder_path / "raw"
 raw_data_file_path = raw_pumpprobe_folder_path / "sCMOS_Frames_U16_1024x512.dat"
 logbook_file_path = raw_pumpprobe_folder_path.parent / "logbook.txt"
 
-nwbfile_path = base_folder_path / "nwbfiles" / f"{session_string}.nwb"
+nwbfile_folder_path = base_folder_path / "nwbfiles"
+nwbfile_folder_path.mkdir(exist_ok=True)
+nwbfile_path = nwbfile_folder_path / f"{session_string}.nwb"
 
 # Initialize interfaces
 data_interfaces = list()
 
+# TODO: pending logbook consistency across sessions (still uploading)
 # subject_interface = SubjectInterface(file_path=logbook_file_path, session_id=session_string)
+# data_interfaces.append(subject_interface)
 
-# one_photon_series_interface = OnePhotonSeriesInterface(folder_path=raw_pumpprobe_folder_path)
+# TODO: pending extension
+# one_photon_series_interface = PumpProbeImagingInterface(folder_path=raw_pumpprobe_folder_path)
+# data_interfaces.append(one_photon_series_interface)
 
 extra_ophys_metadata_interface = ExtraOphysMetadataInterface(folder_path=raw_pumpprobe_folder_path)
+data_interfaces.append(extra_ophys_metadata_interface)
 
 optogenetic_stimulation_interface = OptogeneticStimulationInterface(folder_path=raw_pumpprobe_folder_path)
+data_interfaces.append(optogenetic_stimulation_interface)
 
 # Initialize converter
-data_interfaces = [
-    # subject_interface,  # TODO: pending logbook consistency across sessions (still uploading)
-    # one_photon_series_interface,  # TODO: pending extension
-    extra_ophys_metadata_interface,
-    optogenetic_stimulation_interface,
-]
 converter = RandiNature2023Converter(data_interfaces=data_interfaces)
 
 metadata = converter.get_metadata()
 
 metadata["NWBFile"]["session_start_time"] = session_start_time
 
-# metadata["Subject"]["subject_id"] = session_start_time.strftime("%y%m%d")  # TODO: hopefully come up with better ID
-# metadata["Subject"]["species"] = "C. elegans"
-# metadata["Subject"]["sex"] = "XX"  # TODO: pull from global listing by subject
-# metadata["Subject"]["age"] = "P1D"  # TODO: request
+# TODO: shouldn't need most of this once logbook parsing is done
+metadata["Subject"]["subject_id"] = session_start_time.strftime("%y%m%d")
+metadata["Subject"]["species"] = "C. elegans"
+metadata["Subject"]["sex"] = "XX"
+metadata["Subject"]["age"] = "P1D"
 # metadata["Subject"]["growth_stage_time"] = pandas.Timedelta(hours=2, minutes=30).isoformat()  # TODO: request
-# metadata["Subject"]["growth_stage"] = "YA"  # TODO: request
-# metadata["Subject"]["cultivation_temp"] = "20."  # TODO: request, schema says in units Celsius
+metadata["Subject"]["growth_stage"] = "YA"
+metadata["Subject"]["cultivation_temp"] = 20.0
 
 converter.run_conversion(nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True)

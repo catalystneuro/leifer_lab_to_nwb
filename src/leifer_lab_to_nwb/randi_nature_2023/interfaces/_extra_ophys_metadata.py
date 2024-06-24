@@ -30,24 +30,10 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
         self.sync_table_file_path = folder_path / "other-frameSynchronous.txt"
         self.sync_table = pandas.read_table(filepath_or_buffer=self.sync_table_file_path, index_col=False)
 
-    def add_to_nwbfile(self, nwbfile: pynwb.NWBFile):
+    def add_to_nwbfile(self, nwbfile: pynwb.NWBFile, metadata: dict):
         # Plane depths
         volt_per_um = 0.125  # Hardcoded value by the lab
         depth_in_um_per_pixel = 0.42  # Hardcoded value by the lab
-        frame_depth_table = pynwb.file.DynamicTable(
-            name="FrameDepths",
-            description=(
-                "Each frame was acquired at a different depth as tracked by the voltage supplied to an "
-                "Electrically Tunable Lense (ETL)."
-            ),
-            columns=[
-                pynwb.file.VectorData(
-                    name="depth_in_um",
-                    # Referred to in file as 'piezo' but it's really the ETL
-                    data=self.sync_table["Piezo position (V)"] / volt_per_um,
-                )
-            ],
-        )
 
         # zScan contents
 

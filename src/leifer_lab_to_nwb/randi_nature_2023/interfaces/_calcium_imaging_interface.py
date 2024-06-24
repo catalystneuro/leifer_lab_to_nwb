@@ -1,4 +1,5 @@
 import pathlib
+from typing import Literal
 
 import numpy
 import pandas
@@ -9,15 +10,20 @@ from pydantic import DirectoryPath
 from pynwb import NWBFile
 
 
-class OnePhotonSeriesInterface(BaseImagingExtractorInterface):
+class PumpProbeImagingInterface(BaseImagingExtractorInterface):
     """Custom interface for automatically setting metadata and conversion options for this experiment."""
 
     ExtractorModuleName = "leifer_lab_to_nwb.randi_nature_2023.interfaces.binaryimagingextractor"  # TODO: propagate
     ExtractorName = "BinaryImagingExtractor"
 
-    def __init__(self, *, folder_path: DirectoryPath):
+    def __init__(
+        self,
+        *,
+        folder_path: DirectoryPath,
+        photon_series_type: Literal["OnePhotonSeries", "TwoPhotonSeries"] = "OnePhotonSeries",
+    ) -> None:
         """
-        A custom interface for the raw volumetric pumpprobe data.
+        A custom interface for the raw volumetric PumpProbe data.
 
         Parameters
         ----------
@@ -55,19 +61,19 @@ class OnePhotonSeriesInterface(BaseImagingExtractorInterface):
         super.__init__(file_path=dat_file_path, dtype=dtype, shape=shape, timestamps=timestamps)
 
     def get_metadata(self) -> dict:
-        one_photon_metadata = super().get_metadata(photon_series_type="OnePhotonSeries")
+        one_photon_metadata = super().get_metadata(photon_series_type=self.photon_series_type)
 
         # Hardcoded value from lab
         # This is also an average in a sense - the exact depth is tracked by the Piezo and written
         # as a custom DynamicTable in the ExtraOphysMetadataInterface
-        depth_per_pixel = 0.42
+        # depth_per_pixel = 0.42
 
-        one_photon_metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_pixel)
+        # one_photon_metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_pixel)
 
         return one_photon_metadata
 
     def get_metadata_schema(self) -> dict:
-        return super().get_metadata(photon_series_type="OnePhotonSeries")
+        return super().get_metadata(photon_series_type=self.photon_series_type)
 
     def add_to_nwbfile(
         self,
@@ -84,6 +90,6 @@ class OnePhotonSeriesInterface(BaseImagingExtractorInterface):
             photon_series_index=photon_series_index,
             stub_test=stub_test,
             stub_frames=stub_frames,
-            photon_series_type="OnePhotonSeries",
+            photon_series_type=self.photon_series_type,
             parent_container="acquisition",
         )
