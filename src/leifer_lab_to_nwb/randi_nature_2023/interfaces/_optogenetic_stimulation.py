@@ -10,26 +10,25 @@ from pydantic import DirectoryPath
 
 
 class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
-    """Custom interface for the two photon optogenetic stimulation data."""
 
     def __init__(self, *, folder_path: DirectoryPath):
         """
-        A custom interface for the two photon optogenetic volumetric pumpprobe data.
+        A custom interface for the two photon optogenetic stimulation data.
 
         Parameters
         ----------
-        folder_path : DirectoryPath
+        pumpprobe_folder_path : DirectoryPath
             Path to the raw pumpprobe folder.
         """
-        folder_path = pathlib.Path(folder_path)
+        pumpprobe_folder_path = pathlib.Path(pumpprobe_folder_path)
 
-        self.optogenetic_stimulus_file_path = folder_path / "pharosTriggers.txt"
+        optogenetic_stimulus_file_path = pumpprobe_folder_path / "pharosTriggers.txt"
         self.optogenetic_stimulus_table = pandas.read_table(
-            filepath_or_buffer=self.optogenetic_stimulus_file_path, index_col=False
+            filepath_or_buffer=optogenetic_stimulus_file_path, index_col=False
         )
 
-        self.timestamps_file_path = folder_path / "framesDetails.txt"
-        self.timestamps_table = pandas.read_table(filepath_or_buffer=self.timestamps_file_path, index_col=False)
+        timestamps_file_path = pumpprobe_folder_path / "framesDetails.txt"
+        self.timestamps_table = pandas.read_table(filepath_or_buffer=timestamps_file_path, index_col=False)
         self.timestamps = numpy.array(self.timestamps_table["Timestamp"])
 
     def add_to_nwbfile(
@@ -116,14 +115,14 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
         stimulus_table = ndx_patterned_ogen.PatternedOptogeneticStimulusTable(
             name="OptogeneticStimulusTable",
             description=(
-                "Every 30 seconds, a random neuron was selected among the neurons found in the current volumetric "
+                "Every 30 seconds, a random neuron was selected among the neurons found in the current volumetric "
                 "image, on the basis of only its tagRFP-T signal. After galvo-mirrors and the tunable lens set the "
                 "position of the two-photon spot on that neuron, a 500-ms (300-ms for the unc-31-mutant strain) "
                 "train of light pulses was used to optogenetically stimulate that neuron. The duration of stimulus "
                 "illumination for the unc-31-mutant strain was selected to elicit calcium transients in stimulated "
                 "neurons with a distribution of amplitudes such that the maximum amplitude was similar to those in "
                 "WT-background animals. The output of the laser was controlled through the external interface to its "
-                "built-in pulse picker, and the power of the laser at the sample was 1.2 mW at 500 kHz. Neuron "
+                "built-in pulse picker, and the power of the laser at the sample was 1.2mW at 500kHz. Neuron "
                 "identities were assigned to stimulated neurons after the completion of experiments using NeuroPAL."
             ),
         )

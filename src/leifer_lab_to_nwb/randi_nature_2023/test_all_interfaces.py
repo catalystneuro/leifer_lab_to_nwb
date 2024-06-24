@@ -47,8 +47,12 @@ interfaces_classes_to_test = {
         "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "RedChannel"},
         "conversion_options": {"stub_test": True},
     },
+    # "NeuroPALImagingInterface": {
+    #     "class": NeuroPALImagingInterface,
+    #     "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
+    #     "conversion_options": {"stub_test": True},
+    # },
     # PumpProbeSegmentationInterface: {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
-    # NeuroPALImagingInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
     # NeuroPALSegmentationInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
     # OptogeneticStimulationInterface: {"folder_path": PUMPPROBE_FOLDER_PATH},
 }

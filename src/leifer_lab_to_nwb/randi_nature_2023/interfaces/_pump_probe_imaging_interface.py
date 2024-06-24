@@ -17,7 +17,6 @@ _DEFAULT_CHANNEL_FRAME_SLICING = {
 
 
 class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
-    """Custom interface for automatically setting metadata and conversion options for this experiment."""
 
     def __init__(
         self,
@@ -31,8 +30,8 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         Parameters
         ----------
-        folder_path : directory
-            Path to the raw pumpprobe folder.
+        pumpprobe_folder_path : directory
+            Path to the pumpprobe folder.
         channel_name : either of "GreenChannel", "RedChannel" or an arbitrary string
             The name given to the optical channel responsible for collecting this data.
             The two allowed defaults determine other properties automatically; but when specifying an arbitrary string,
