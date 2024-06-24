@@ -8,27 +8,24 @@ from pydantic import DirectoryPath
 
 
 class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
-    """A custom interface for adding extra table metadata for the ophys rig."""
 
-    def __init__(self, *, folder_path: DirectoryPath) -> None:
+    def __init__(self, *, pumpprobe_folder_path: DirectoryPath) -> None:
         """
         A custom interface for adding extra table metadata for the ophys rig.
 
         Parameters
         ----------
-        folder_path : DirectoryPath
+        pumpprobe_folder_path : DirectoryPath
             Path to the raw pumpprobe folder.
         """
-        folder_path = pathlib.Path(folder_path)
+        pumpprobe_folder_path = pathlib.Path(pumpprobe_folder_path)
 
-        super().__init__(folder_path=folder_path)
-
-        self.z_scan_file_path = folder_path / "zScan.json"
-        with open(file=self.z_scan_file_path, mode="r") as fp:
+        z_scan_file_path = pumpprobe_folder_path / "zScan.json"
+        with open(file=z_scan_file_path, mode="r") as fp:
             self.z_scan = json.load(fp=fp)
 
-        self.sync_table_file_path = folder_path / "other-frameSynchronous.txt"
-        self.sync_table = pandas.read_table(filepath_or_buffer=self.sync_table_file_path, index_col=False)
+        sync_table_file_path = pumpprobe_folder_path / "other-frameSynchronous.txt"
+        self.sync_table = pandas.read_table(filepath_or_buffer=sync_table_file_path, index_col=False)
 
     def add_to_nwbfile(self, nwbfile: pynwb.NWBFile, metadata: dict):
         # Plane depths

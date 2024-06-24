@@ -54,19 +54,26 @@ interfaces_classes_to_test = {
     # },
     # PumpProbeSegmentationInterface: {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
     # NeuroPALSegmentationInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
-    # OptogeneticStimulationInterface: {"folder_path": PUMPPROBE_FOLDER_PATH},
+    # "OptogeneticStimulationInterface": {
+    #     "class": OptogeneticStimulationInterface,
+    #     "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+    # },
+    "ExtraOphysMetadataInterface": {
+        "class": ExtraOphysMetadataInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+    },
 }
 
-# All interfaces must currently be written with the 'ExtraOphysMetadataInterface' first to ensure all
-# associated metadata is included
-# TODO: might figure a good way to include this automatically via the NWBConverter
+
 for test_case_name, interface_options in interfaces_classes_to_test.items():
     nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"test_{test_case_name}.nwb"
 
     data_interfaces = list()
 
-    extra_ophys_metadata_interface = ExtraOphysMetadataInterface(folder_path=PUMPPROBE_FOLDER_PATH)
-    data_interfaces.append(extra_ophys_metadata_interface)
+    # Special case of the OptogeneticStimulationInterface; requires the PumpProbeSegmentationInterface to be added first
+    if test_case_name == "OptogeneticStimulationInterface":
+        pump_probe_segmentation_interface = PumpProbeSegmentationInterface(folder_path=PUMPPROBE_FOLDER_PATH)
+        data_interfaces.append(pump_probe_segmentation_interface)
 
     InterfaceClassToTest = interface_options["class"]
     interface = InterfaceClassToTest(**interface_options["source_data"])
