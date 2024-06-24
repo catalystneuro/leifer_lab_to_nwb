@@ -11,7 +11,7 @@ from pydantic import DirectoryPath
 
 class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
 
-    def __init__(self, *, folder_path: DirectoryPath):
+    def __init__(self, *, pumpprobe_folder_path: DirectoryPath):
         """
         A custom interface for the two photon optogenetic stimulation data.
 

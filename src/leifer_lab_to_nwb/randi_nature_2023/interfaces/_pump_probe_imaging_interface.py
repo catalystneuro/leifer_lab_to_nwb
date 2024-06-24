@@ -129,11 +129,11 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         else:
             microscope = nwbfile.devices["Microscope"]
 
-        if "LightSource" not in nwbfile.devices:
-            light_source = ndx_microscopy.LightSource(name="LightSource")  # TODO
+        if "MicroscopyLightSource" not in nwbfile.devices:
+            light_source = ndx_microscopy.MicroscopyLightSource(name="MicroscopyLightSource")  # TODO
             nwbfile.add_device(devices=light_source)
         else:
-            light_source = nwbfile.devices["LightSource"]
+            light_source = nwbfile.devices["MicroscopyLightSource"]
 
         if "PlanarImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.PlanarImagingSpace(

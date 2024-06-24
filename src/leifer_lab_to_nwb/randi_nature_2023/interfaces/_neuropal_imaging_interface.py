@@ -9,22 +9,14 @@ import pandas
 import pynwb
 from pydantic import DirectoryPath
 
-_DEFAULT_CHANNEL_NAMES = ["GreenChannel", "RedChannel"]
-_DEFAULT_CHANNEL_FRAME_SLICING = {
-    "GreenChannel": (slice(0, 512), slice(0, 512)),
-    "RedChannel": (slice(512, 1024), slice(0, 512)),
-}
 
-
-class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
+class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
     """Custom interface for automatically setting metadata and conversion options for this experiment."""
 
     def __init__(
         self,
         *,
-        pumpprobe_folder_path: DirectoryPath,
-        channel_name: Literal[_DEFAULT_CHANNEL_NAMES] | str,
-        channel_frame_slicing: tuple[slice, slice] | None = None,
+        multicolor_folder_path: DirectoryPath,
     ) -> None:
         """
         A custom interface for the raw volumetric PumpProbe data.
