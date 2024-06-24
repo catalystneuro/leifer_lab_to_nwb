@@ -11,14 +11,14 @@ from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
     ExtraOphysMetadataInterface,
     OptogeneticStimulationInterface,
     PumpProbeImagingInterface,
-    SubjectInterface,
+    PumpProbeSegmentationInterface,
 )
 
 # Define base folder of source data
 # Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("E:/Leifer")
-SESSION_FOLDER_PATH = BASE_FOLDER_PATH / "Hermaphrodite"
-LOGBOOK_FILE_PATH = raw_pumpprobe_folder_path.parent / "logbook.txt"
+BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
+SESSION_FOLDER_PATH = BASE_FOLDER_PATH / "20211104"
+# LOGBOOK_FILE_PATH = SESSION_FOLDER_PATH / "logbook.txt"
 
 PUMPPROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
 MULTICOLOR_FOLDER_PATH = SESSION_FOLDER_PATH / "multicolorworm_20211104_162630"
@@ -36,34 +36,36 @@ session_string = PUMPPROBE_FOLDER_PATH.stem.removeprefix("pumpprobe_")
 session_start_time = datetime.datetime.strptime(session_string, "%Y%m%d_%H%M%S")
 session_start_time = session_start_time.replace(tzinfo=tz.gettz("US/Eastern"))
 
-# Define specific paths for interfaces and output
-raw_pumpprobe_folder_path = PUMPPROBE_FOLDER_PATH / "raw"
-raw_multicolor_folder_path = SESSION_FOLDER_PATH / "multicolor_20210830_111646"
-
-raw_data_file_path = raw_pumpprobe_folder_path / "sCMOS_Frames_U16_1024x512.dat"
-LOGBOOK_FILE_PATH = raw_pumpprobe_folder_path.parent / "logbook.txt"
-
-nwbfile_folder_path = BASE_FOLDER_PATH / "nwbfiles"
-nwbfile_folder_path.mkdir(exist_ok=True)
-nwbfile_path = nwbfile_folder_path / f"{session_string}.nwb"
-
 interfaces_classes_to_test = {
-    PumpProbeImagingInterface: {"folder_path": raw_pumpprobe_folder_path},
-    CalciumSegmentationInterface: {"folder_path": raw_pumpprobe_folder_path},
-    NeuroPALImagingInterface: {"folder_path": raw_multicolor_folder_path},
-    OptogeneticStimulationInterface: {"folder_path": raw_pumpprobe_folder_path},
+    "PumpProbeImagingInterfaceGreen": {
+        "class": PumpProbeImagingInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "GreenChannel"},
+        "conversion_options": {"stub_test": True},
+    },
+    "PumpProbeImagingInterfaceRed": {
+        "class": PumpProbeImagingInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "RedChannel"},
+        "conversion_options": {"stub_test": True},
+    },
+    # PumpProbeSegmentationInterface: {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+    # NeuroPALImagingInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
+    # NeuroPALSegmentationInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
+    # OptogeneticStimulationInterface: {"folder_path": PUMPPROBE_FOLDER_PATH},
 }
 
 # All interfaces must currently be written with the 'ExtraOphysMetadataInterface' first to ensure all
 # associated metadata is included
 # TODO: might figure a good way to include this automatically via the NWBConverter
-for InterfaceClassToTest in interfaces_to_test:
-    nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"test_{InterfaceClassToTest}.nwb"
+for test_case_name, interface_options in interfaces_classes_to_test.items():
+    nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"test_{test_case_name}.nwb"
 
-    extra_ophys_metadata_interface = ExtraOphysMetadataInterface(folder_path=raw_pumpprobe_folder_path)
+    data_interfaces = list()
+
+    extra_ophys_metadata_interface = ExtraOphysMetadataInterface(folder_path=PUMPPROBE_FOLDER_PATH)
     data_interfaces.append(extra_ophys_metadata_interface)
 
-    interface = InterfaceClassToTest(folder_path=raw_pumpprobe_folder_path)
+    InterfaceClassToTest = interface_options["class"]
+    interface = InterfaceClassToTest(**interface_options["source_data"])
     data_interfaces.append(interface)
 
     # Initialize converter
@@ -83,4 +85,10 @@ for InterfaceClassToTest in interfaces_to_test:
     metadata["Subject"]["growth_stage"] = "YA"
     metadata["Subject"]["cultivation_temp"] = 20.0
 
-    converter.run_conversion(nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True)
+    if "conversion_options" in interface_options:
+        conversion_options = {InterfaceClassToTest.__name__: interface_options["conversion_options"]}
+    else:
+        conversion_options = None
+    converter.run_conversion(
+        nwbfile_path=nwbfile_path, metadata=metadata, conversion_options=conversion_options, overwrite=True
+    )
