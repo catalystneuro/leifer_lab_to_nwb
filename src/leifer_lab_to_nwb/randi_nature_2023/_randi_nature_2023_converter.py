@@ -1,18 +1,29 @@
+import copy
 from typing import Union
 
 import ndx_multichannel_volume
 import neuroconv
 import pynwb
+from pydantic import FilePath
 
 
 class RandiNature2023Converter(neuroconv.ConverterPipe):
+    def get_metadata_schema(self) -> dict:
+        base_metadata_schema = super().get_metadata_schema()
+
+        # Suppress special Subject field validations
+        metadata_schema = copy.deepcopy(base_metadata_schema)
+        metadata_schema["properties"].pop("Subject")
+
+        return metadata_schema
+
     def run_conversion(
         self,
-        nwbfile_path: Union[str, None] = None,
-        nwbfile: Union[pynwb.NWBFile, None] = None,
-        metadata: Union[dict, None] = None,
+        nwbfile_path: FilePath | None = None,
+        nwbfile: pynwb.NWBFile | None = None,
+        metadata: dict | None = None,
         overwrite: bool = False,
-        conversion_options: Union[dict, None] = None,
+        conversion_options: dict | None = None,
     ) -> pynwb.NWBFile:
         if metadata is None:
             metadata = self.get_metadata()
@@ -20,7 +31,7 @@ class RandiNature2023Converter(neuroconv.ConverterPipe):
 
         metadata_copy = dict(metadata)
         subject_metadata = metadata_copy.pop("Subject")  # Must remove from base metadata
-        ibl_subject = ndx_multichannel_volume.CElegansSubject(**subject_metadata)
+        subject = ndx_multichannel_volume.CElegansSubject(**subject_metadata)
 
         conversion_options = conversion_options or dict()
         self.validate_conversion_options(conversion_options=conversion_options)
@@ -32,7 +43,7 @@ class RandiNature2023Converter(neuroconv.ConverterPipe):
             overwrite=overwrite,
             verbose=self.verbose,
         ) as nwbfile_out:
-            nwbfile_out.subject = ibl_subject
+            nwbfile_out.subject = subject
             for interface_name, data_interface in self.data_interface_objects.items():
                 data_interface.add_to_nwbfile(
                     nwbfile=nwbfile_out, metadata=metadata_copy, **conversion_options.get(interface_name, dict())
