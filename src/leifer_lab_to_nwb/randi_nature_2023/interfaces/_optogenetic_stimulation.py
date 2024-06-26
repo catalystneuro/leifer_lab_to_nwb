@@ -99,7 +99,7 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
         nwbfile.add_lab_meta_data(temporal_focusing)
 
         # Assume all targets are unique; if retargeting of the same location is ever enabled, it would be nice
-        # to refactor this to make proper re-use of target locations.
+        # to refactor this to make proper reuse of target locations.
         targeted_plane_segmentation = pynwb.ophys.PlaneSegmentation(
             name="TargetPlaneSegmentation",
             description="Table for storing the target centroids, defined by a one-voxel mask.",
