@@ -4,11 +4,13 @@ import datetime
 import pathlib
 
 import pandas
+import pynwb
 from dateutil import tz
 
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
     ExtraOphysMetadataInterface,
+    NeuroPALImagingInterface,
     OptogeneticStimulationInterface,
     PumpProbeImagingInterface,
     PumpProbeSegmentationInterface,
@@ -47,11 +49,11 @@ interfaces_classes_to_test = {
         "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
         "conversion_options": {"stub_test": True},
     },
-    # "NeuroPALImagingInterface": {
-    #     "class": NeuroPALImagingInterface,
-    #     "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
-    #     "conversion_options": {"stub_test": True},
-    # },
+    "NeuroPALImagingInterface": {
+        "class": NeuroPALImagingInterface,
+        "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
+        "conversion_options": {"stub_test": True},
+    },
     "PumpProbeSegmentationInterface": {
         "class": PumpProbeSegmentationInterface,
         "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
@@ -61,10 +63,10 @@ interfaces_classes_to_test = {
         "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
     },
     # NeuroPALSegmentationInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
-    # "OptogeneticStimulationInterface": {
-    #     "class": OptogeneticStimulationInterface,
-    #     "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
-    # },
+    "OptogeneticStimulationInterface": {
+        "class": OptogeneticStimulationInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+    },
     "ExtraOphysMetadataInterface": {
         "class": ExtraOphysMetadataInterface,
         "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
@@ -79,7 +81,9 @@ for test_case_name, interface_options in interfaces_classes_to_test.items():
 
     # Special case of the OptogeneticStimulationInterface; requires the PumpProbeSegmentationInterface to be added first
     if test_case_name == "OptogeneticStimulationInterface":
-        pump_probe_segmentation_interface = PumpProbeSegmentationInterface(folder_path=PUMPPROBE_FOLDER_PATH)
+        pump_probe_segmentation_interface = PumpProbeSegmentationInterface(
+            pumpprobe_folder_path=PUMPPROBE_FOLDER_PATH, channel_name="Green"
+        )
         data_interfaces.append(pump_probe_segmentation_interface)
 
     InterfaceClassToTest = interface_options["class"]
@@ -110,3 +114,7 @@ for test_case_name, interface_options in interfaces_classes_to_test.items():
     converter.run_conversion(
         nwbfile_path=nwbfile_path, metadata=metadata, conversion_options=conversion_options, overwrite=True
     )
+
+    # Test roundtrip to make sure PyNWB can read the file back
+    with pynwb.NWBHDF5IO(path=nwbfile_path, mode="r") as io:
+        read_nwbfile = io.read()

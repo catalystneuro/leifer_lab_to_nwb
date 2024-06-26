@@ -52,17 +52,30 @@ class PumpProbeSegmentationInterface(BaseSegmentationExtractorInterface):
         image_shape = (512, 512)
         super().__init__(file_path=pickle_file_path, timestamps=self.timestamps, image_shape=image_shape)
 
+        # Hardcode a special plane segmentation name for this interface
+        # self.plane_segmentation_name = "PumpProbeSegmentation"
+
     # def get_metadata(self) -> dict:
-    #     one_photon_metadata = super().get_metadata(photon_series_type="OnePhotonSeries")
+    #     metadata = super().get_metadata()
     #
     #     # Hardcoded value from lab
     #     # This is also an average in a sense - the exact depth is tracked by the Piezo and written
     #     # as a custom DynamicTable in the ExtraOphysMetadataInterface
     #     depth_per_pixel = 0.42
     #
-    #     one_photon_metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_pixel)
+    #     # one_photon_metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_pixel)
     #
-    #     return one_photon_metadata
+    #     metadata["Ophys"]["ImageSegmentation"]["plane_segmentations"][0]["name"] = self.plane_segmentation_name
+    #
+    #     metadata["Ophys"]["Fluorescence"]= {'name': 'Fluorescence', self.plane_segmentation_name: {'raw': {
+    #         'name': 'BaselineSignal', 'description': 'Array of raw fluorescence traces.', 'unit': 'n.a.'}}}
+    #     metadata["Ophys"]["DfOverF"] = {'name': 'Derivative', self.plane_segmentation_name: {
+    #         'dff': {'name': 'DerivativeOfSignal', 'description': 'Array of filtered fluorescence traces; '
+    #                                                              'approximately the derivative (unnormalized) of the '
+    #                                                              'baseline signal'
+    #                                                              '.', 'unit': 'n.a.'}}}
+    #
+    #     return metadata
     #
     # def get_metadata_schema(self) -> dict:
     #     return super().get_metadata(photon_series_type="OnePhotonSeries")
@@ -72,16 +85,11 @@ class PumpProbeSegmentationInterface(BaseSegmentationExtractorInterface):
     #     *,
     #     nwbfile: NWBFile,
     #     metadata: dict | None = None,
-    #     # photon_series_index: int = 0,
     #     stub_test: bool = False,
-    #     stub_frames: int = 100,
     # ) -> None:
     #     super().add_to_nwbfile(
     #         nwbfile=nwbfile,
     #         metadata=metadata,
-    #         # photon_series_index=photon_series_index,
     #         stub_test=stub_test,
-    #         stub_frames=stub_frames,
-    #         # photon_series_type="OnePhotonSeries",
-    #         # parent_container="acquisition",
+    #         plane_segmentation_name="PumpProbeSegmentation",
     #     )

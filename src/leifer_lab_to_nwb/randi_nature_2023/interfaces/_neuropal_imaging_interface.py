@@ -77,7 +77,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             microscope = nwbfile.devices["Microscope"]
 
         if "LightSource" not in nwbfile.devices:
-            light_source = ndx_microscopy.LightSource(name="LightSource")
+            light_source = ndx_microscopy.MicroscopyLightSource(name="LightSource")
             nwbfile.add_device(devices=light_source)
         else:
             light_source = nwbfile.devices["LightSource"]
@@ -95,7 +95,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         optical_channels = list()
         light_sources = list()
         for channel_name in neuropal_channel_names:
-            light_source = ndx_microscopy.LightSource(name=f"{channel_name}LightSource")
+            light_source = ndx_microscopy.MicroscopyLightSource(name=f"{channel_name}LightSource")
             nwbfile.add_device(devices=light_source)
             light_sources.append(light_source)
 
@@ -106,7 +106,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             optical_channels.append(optical_channel)
 
         # Not exposing chunking/buffering control here for simplicity; note that a single frame is about 8 MB
-        chunk_shape = (1, 1, x, y)
+        chunk_shape = (1, 1, self.data_shape[-2], self.data_shape[-1])
 
         # Best we can do is limit the number of depths that are written by stub
         imaging_data = self.data if not stub_test else self.data[:stub_depths, :, :, :]
@@ -116,9 +116,9 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             name="NeuroPALImaging",
             description="",
             microscope=microscope,
-            light_sources=light_sources,
+            light_sources=light_sources[0],  # TODO
             imaging_space=imaging_space,
-            optical_channels=optical_channels,  # TODO
+            optical_channels=optical_channels[0],  # TODO
             data=data_iterator,
             unit="n.a.",
         )
