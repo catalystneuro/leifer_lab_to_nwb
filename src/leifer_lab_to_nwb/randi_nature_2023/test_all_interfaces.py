@@ -11,6 +11,7 @@ from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
     ExtraOphysMetadataInterface,
     NeuroPALImagingInterface,
+    NeuroPALSegmentationInterface,
     OptogeneticStimulationInterface,
     PumpProbeImagingInterface,
     PumpProbeSegmentationInterface,
@@ -49,20 +50,25 @@ interfaces_classes_to_test = {
         "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
         "conversion_options": {"stub_test": True},
     },
+    "PumpProbeSegmentationInterfaceGreed": {
+        "class": PumpProbeSegmentationInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
+        "conversion_options": {"stub_test": True},
+    },
+    "PumpProbeSegmentationInterfaceRed": {
+        "class": PumpProbeSegmentationInterface,
+        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
+        "conversion_options": {"stub_test": True},
+    },
     "NeuroPALImagingInterface": {
         "class": NeuroPALImagingInterface,
         "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
         "conversion_options": {"stub_test": True},
     },
-    "PumpProbeSegmentationInterface": {
-        "class": PumpProbeSegmentationInterface,
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
+    "NeuroPALSegmentationInterface": {
+        "class": NeuroPALSegmentationInterface,
+        "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
     },
-    "PumpProbeSegmentationInterface": {
-        "class": PumpProbeSegmentationInterface,
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
-    },
-    # NeuroPALSegmentationInterface: {"folder_path": MULTICOLOR_FOLDER_PATH},
     "OptogeneticStimulationInterface": {
         "class": OptogeneticStimulationInterface,
         "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},

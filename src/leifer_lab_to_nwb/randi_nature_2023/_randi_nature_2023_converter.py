@@ -4,6 +4,7 @@ from typing import Union
 import ndx_multichannel_volume
 import neuroconv
 import pynwb
+from pydantic import FilePath
 
 
 class RandiNature2023Converter(neuroconv.ConverterPipe):
@@ -18,11 +19,11 @@ class RandiNature2023Converter(neuroconv.ConverterPipe):
 
     def run_conversion(
         self,
-        nwbfile_path: Union[str, None] = None,
-        nwbfile: Union[pynwb.NWBFile, None] = None,
-        metadata: Union[dict, None] = None,
+        nwbfile_path: FilePath | None = None,
+        nwbfile: pynwb.NWBFile | None = None,
+        metadata: dict | None = None,
         overwrite: bool = False,
-        conversion_options: Union[dict, None] = None,
+        conversion_options: dict | None = None,
     ) -> pynwb.NWBFile:
         if metadata is None:
             metadata = self.get_metadata()

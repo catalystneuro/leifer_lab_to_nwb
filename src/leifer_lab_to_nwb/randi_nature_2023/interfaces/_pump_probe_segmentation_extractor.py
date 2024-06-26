@@ -6,7 +6,7 @@ from pydantic import FilePath
 from roiextractors import SegmentationExtractor
 
 
-class CustomSegmentationExtractor(SegmentationExtractor):
+class PumpProbeSegmentationExtractor(SegmentationExtractor):
     """A very custom segmentation extractor for the .pickle files that correspond to wormdatamodel objects."""
 
     def __init__(

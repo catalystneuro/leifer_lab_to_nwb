@@ -13,11 +13,7 @@ from pydantic import DirectoryPath
 class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
     """Custom interface for automatically setting metadata and conversion options for this experiment."""
 
-    def __init__(
-        self,
-        *,
-        multicolor_folder_path: DirectoryPath,
-    ) -> None:
+    def __init__(self, *, multicolor_folder_path: DirectoryPath) -> None:
         """
         A custom interface for the raw volumetric PumpProbe data.
 
@@ -26,6 +22,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         multicolor_folder_path : directory
             Path to the multicolor folder.
         """
+        super().__init__(multicolor_folder_path=multicolor_folder_path)
         multicolor_folder_path = pathlib.Path(multicolor_folder_path)
 
         # If the device setup is ever changed, these may need to be exposed as keyword arguments
