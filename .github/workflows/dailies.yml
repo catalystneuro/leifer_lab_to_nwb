@@ -8,7 +8,7 @@ on:
 jobs:
 
   run-daily-tests:
-    uses: catalystneuro/leifer-lab-to-nwb/.github/workflows/testing.yml@main
+    uses: ./.github/workflows/testing.yml
 
   notify:
     runs-on: ubuntu-latest
@@ -21,7 +21,7 @@ jobs:
         server_port: 465  # TSL
         username: ${{ secrets.MAIL_USERNAME }}
         password: ${{ secrets.MAIL_PASSWORD }}
-        subject: TQDM Publisher Daily Test Failure
+        subject: Leifer Lab to NWB Daily Failure
         to: cody.c.baker.phd@gmail.com
-        from: TQDM Publisher
-        body: "The daily workflow for TQDM Publisher failed: please check status at https://github.com/CatalystNeuro/leifer-lab-to-nwb/actions/workflows/dailies.yml"
+        from: Leifer Lab to NWB
+        body: "The daily workflow for Leifer Lab to NWB failed: please check status at https://github.com/CatalystNeuro/leifer-lab-to-nwb/actions/workflows/dailies.yml"
