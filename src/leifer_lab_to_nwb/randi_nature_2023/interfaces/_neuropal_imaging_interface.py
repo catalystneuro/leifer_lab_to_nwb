@@ -1,3 +1,4 @@
+import json
 import pathlib
 import shutil
 from typing import Literal
@@ -43,20 +44,29 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         self.data = shaped_data
 
-    # def get_metadata(self) -> dict:
-    #     one_photon_metadata = super().get_metadata(photon_series_type=self.photon_series_type)
-    #
-    #     # Hardcoded value from lab
-    #     # This is also an average in a sense - the exact depth is tracked by the Piezo and written
-    #     # as a custom DynamicTable in the ExtraOphysMetadataInterface
-    #     # depth_per_pixel = 0.42
-    #
-    #     # one_photon_metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_pixel)
-    #
-    #     return one_photon_metadata
-    #
-    # def get_metadata_schema(self) -> dict:
-    #     return super().get_metadata(photon_series_type=self.photon_series_type)
+        brains_file_path = multicolor_folder_path / "brains.json"
+        with open(brains_file_path, "r") as io:
+            self.brains_info = json.load(fp=io)
+
+        # Some basic homogeneity checks
+        assert len(self.brains_info["nInVolume"]) == 1, "Only one labeling is supported."
+        assert (
+            len(self.brains_info["nInVolume"]) == len(self.brains_info["zOfFrame"])
+            and len(self.brains_info["zOfFrame"]) == len(self.brains_info["labels"])
+            and len(self.brains_info["labels"]) == len(self.brains_info["labels_confidences"])
+            and len(self.brains_info["labels_confidences"]) == len(self.brains_info["labels_comments"])
+        ), "Mismatch in JSON substructure lengths."
+        assert (
+            self.brains_info["nInVolume"][0] == len(self.brains_info["labels"][0])
+            and self.brains_info["nInVolume"][0] == len(self.brains_info["labels_confidences"][0])
+            and self.brains_info["nInVolume"][0] == len(self.brains_info["labels_comments"][0])
+        ), "Length of contents does not match number of ROIs."
+
+        # Additional homogeneity check for imaging compatability
+        json_depth_length = len(self.brains_info["zOfFrame"][0])
+        assert (
+            json_depth_length == number_of_depths
+        ), f"Mismatch between length of 'zOfFrame' ({json_depth_length}) and number of depths ({number_of_depths})."
 
     def add_to_nwbfile(
         self,
@@ -109,7 +119,9 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         imaging_data = self.data if not stub_test else self.data[:stub_depths, :, :, :]
         data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(data=imaging_data, chunk_shape=chunk_shape)
 
-        multi_channel_microscopy_volume = ndx_microscopy.MultiChannelMicroscopyVolume(
+        depth_per_frame_in_um = self.brains_info["zOfFrame"][0]
+
+        multi_channel_microscopy_volume = ndx_microscopy.VariableDepthMultiChannelMicroscopyVolume(
             name="NeuroPALImaging",
             description="",
             microscope=microscope,
@@ -117,6 +129,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             imaging_space=imaging_space,
             optical_channels=optical_channels[0],  # TODO
             data=data_iterator,
+            depth_per_frame_in_um=depth_per_frame_in_um,
             unit="n.a.",
         )
         nwbfile.add_acquisition(multi_channel_microscopy_volume)

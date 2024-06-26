@@ -98,6 +98,3 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
 
         ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")
         ophys_module.add(image_segmentation)
-
-        # TODO: include z frame depths for NeuroPAL side - maybe in the 'extra ophys interface'?
-        # Or just in a custom irregular grid spacing volumetric imaging space?
