@@ -1,4 +1,10 @@
-"""Main conversion script for a single session of data for the Randi et al. Nature 2023 paper."""
+"""
+Test each individual interface by performing standalone file creations.
+
+An actual conversion should use the `convert_session.py` or `convert_data.py` scripts.
+
+This just makes debugging easier.
+"""
 
 import datetime
 import pathlib

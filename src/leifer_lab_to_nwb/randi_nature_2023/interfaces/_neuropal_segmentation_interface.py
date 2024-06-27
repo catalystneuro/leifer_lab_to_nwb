@@ -5,12 +5,11 @@ import ndx_microscopy
 import neuroconv
 import pynwb
 from neuroconv.basedatainterface import BaseDataInterface
-from pydantic import DirectoryPath
 
 
 class NeuroPALSegmentationInterface(BaseDataInterface):
 
-    def __init__(self, *, multicolor_folder_path: DirectoryPath):
+    def __init__(self, *, multicolor_folder_path: str | pathlib.Path):
         """
         A custom interface for the raw volumetric NeuroPAL data.
 
@@ -98,6 +97,3 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
 
         ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")
         ophys_module.add(image_segmentation)
-
-        # TODO: include z frame depths for NeuroPAL side - maybe in the 'extra ophys interface'?
-        # Or just in a custom irregular grid spacing volumetric imaging space?

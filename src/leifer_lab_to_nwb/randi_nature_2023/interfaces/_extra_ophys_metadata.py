@@ -4,12 +4,11 @@ import pathlib
 import neuroconv
 import pandas
 import pynwb
-from pydantic import DirectoryPath
 
 
 class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
 
-    def __init__(self, *, pumpprobe_folder_path: DirectoryPath) -> None:
+    def __init__(self, *, pumpprobe_folder_path: str | pathlib.Path) -> None:
         """
         A custom interface for adding extra table metadata for the ophys rig.
 

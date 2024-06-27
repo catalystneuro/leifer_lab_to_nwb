@@ -1,8 +1,8 @@
+import pathlib
 import pickle
 from typing import Iterable, Literal, Tuple, Union
 
 import numpy
-from pydantic import FilePath
 from roiextractors import SegmentationExtractor
 
 
@@ -12,7 +12,7 @@ class PumpProbeSegmentationExtractor(SegmentationExtractor):
     def __init__(
         self,
         *,
-        file_path: FilePath,
+        file_path: str | pathlib.Path,
         timestamps: Iterable[float],
         image_shape: Tuple[int, int],
     ) -> None:

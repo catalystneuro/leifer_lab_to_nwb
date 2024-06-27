@@ -6,7 +6,6 @@ import pandas
 from neuroconv.datainterfaces.ophys.basesegmentationextractorinterface import (
     BaseSegmentationExtractorInterface,
 )
-from pydantic import DirectoryPath
 from pynwb import NWBFile
 
 
@@ -14,7 +13,7 @@ class PumpProbeSegmentationInterface(BaseSegmentationExtractorInterface):
     ExtractorModuleName = "leifer_lab_to_nwb.randi_nature_2023.interfaces._pump_probe_segmentation_extractor"
     ExtractorName = "PumpProbeSegmentationExtractor"
 
-    def __init__(self, *, pumpprobe_folder_path: DirectoryPath, channel_name: Literal["Green", "Red"] | str):
+    def __init__(self, *, pumpprobe_folder_path: str | pathlib.Path, channel_name: Literal["Green", "Red"] | str):
         """
         A custom interface for the raw volumetric pumpprobe data.
 

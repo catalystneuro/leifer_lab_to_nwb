@@ -6,12 +6,11 @@ import neuroconv
 import numpy
 import pandas
 import pynwb
-from pydantic import DirectoryPath
 
 
 class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
 
-    def __init__(self, *, pumpprobe_folder_path: DirectoryPath):
+    def __init__(self, *, pumpprobe_folder_path: str | pathlib.Path):
         """
         A custom interface for the two photon optogenetic stimulation data.
 
@@ -93,8 +92,10 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
                 "its lateral position. The pulsed beam was then combined with the imaging light path by a dichroic "
                 "mirror immediately before entering the back of the objective."
             ),
-            lateral_point_spread_function_in_um="9 ± 0.7",  # TODO
-            axial_point_spread_function_in_um="32 ± 1.6",  # TODO
+            # Calculated manually from the 'source data' of Supplementary Figure 2a
+            # https://www.nature.com/articles/s41586-023-06683-4#MOESM10
+            lateral_point_spread_function_in_um="(-0.245, 0.059) ± (0.396, 0.264)",
+            axial_point_spread_function_in_um="0.444 ± 0.536",
         )
         nwbfile.add_lab_meta_data(temporal_focusing)
 
@@ -105,12 +106,15 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
             description="Table for storing the target centroids, defined by a one-voxel mask.",
             imaging_plane=imaging_plane,
         )
-        for target_x, target_y, target_z in zip(
+        targeted_plane_segmentation.add_column(name="depth_in_um", description="Targeted depth in micrometers.")
+        for target_x_index, target_y_index, depth_in_mm in zip(
             self.optogenetic_stimulus_table["optogTargetX"],
             self.optogenetic_stimulus_table["optogTargetY"],
             self.optogenetic_stimulus_table["optogTargetZ"],
         ):
-            targeted_plane_segmentation.add_roi(voxel_mask=[(target_x, target_y, target_z, 1.0)])
+            targeted_plane_segmentation.add_roi(
+                pixel_mask=[(int(target_x_index), int(target_y_index), 1.0)], depth_in_um=depth_in_mm * 1e3
+            )
         image_segmentation.add_plane_segmentation(targeted_plane_segmentation)
 
         # Hardcoded duration from the methods section of paper
