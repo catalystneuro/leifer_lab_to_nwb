@@ -5,12 +5,11 @@ import ndx_microscopy
 import neuroconv
 import pynwb
 from neuroconv.basedatainterface import BaseDataInterface
-from pydantic import DirectoryPath
 
 
 class NeuroPALSegmentationInterface(BaseDataInterface):
 
-    def __init__(self, *, multicolor_folder_path: DirectoryPath):
+    def __init__(self, *, multicolor_folder_path: str | pathlib.Path):
         """
         A custom interface for the raw volumetric NeuroPAL data.
 

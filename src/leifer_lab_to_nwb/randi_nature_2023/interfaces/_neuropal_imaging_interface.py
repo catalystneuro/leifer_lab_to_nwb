@@ -8,13 +8,12 @@ import neuroconv
 import numpy
 import pandas
 import pynwb
-from pydantic import DirectoryPath
 
 
 class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
     """Custom interface for automatically setting metadata and conversion options for this experiment."""
 
-    def __init__(self, *, multicolor_folder_path: DirectoryPath) -> None:
+    def __init__(self, *, multicolor_folder_path: str | pathlib.Path) -> None:
         """
         A custom interface for the raw volumetric PumpProbe data.
 

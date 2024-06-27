@@ -7,7 +7,6 @@ import neuroconv
 import numpy
 import pandas
 import pynwb
-from pydantic import DirectoryPath
 
 _DEFAULT_CHANNEL_NAMES = ["Green", "Red"]
 _DEFAULT_CHANNEL_FRAME_SLICING = {
@@ -21,7 +20,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
     def __init__(
         self,
         *,
-        pumpprobe_folder_path: DirectoryPath,
+        pumpprobe_folder_path: str | pathlib.Path,
         channel_name: Literal[_DEFAULT_CHANNEL_NAMES] | str,
         channel_frame_slicing: tuple[slice, slice] | None = None,
     ) -> None:
@@ -161,7 +160,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         timestamps = self.timestamps if not stub_test else self.timestamps[:stub_frames]
 
         variable_depth_microscopy_series = ndx_microscopy.VariableDepthMicroscopySeries(
-            name="PumpProbeImaging",
+            name=f"PumpProbeImaging{self.channel_name}",
             description="",  # TODO
             microscope=microscope,
             light_source=light_source,

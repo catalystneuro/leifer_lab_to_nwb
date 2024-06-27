@@ -6,8 +6,28 @@ import neuroconv
 import pynwb
 from pydantic import FilePath
 
+from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
+    ExtraOphysMetadataInterface,
+    NeuroPALImagingInterface,
+    NeuroPALSegmentationInterface,
+    OptogeneticStimulationInterface,
+    PumpProbeImagingInterface,
+    PumpProbeSegmentationInterface,
+)
 
-class RandiNature2023Converter(neuroconv.ConverterPipe):
+
+class RandiNature2023Converter(neuroconv.NWBConverter):
+    data_interface_classes = {
+        "PumpProbeImagingInterfaceGreen": PumpProbeImagingInterface,
+        "PumpProbeImagingInterfaceRed": PumpProbeImagingInterface,
+        "PumpProbeSegmentationInterfaceGreed": PumpProbeSegmentationInterface,
+        "PumpProbeSegmentationInterfaceRed": PumpProbeSegmentationInterface,
+        "NeuroPALImagingInterface": NeuroPALImagingInterface,
+        "NeuroPALSegmentationInterface": NeuroPALSegmentationInterface,
+        "OptogeneticStimulationInterface": OptogeneticStimulationInterface,
+        "ExtraOphysMetadataInterface": ExtraOphysMetadataInterface,
+    }
+
     def get_metadata_schema(self) -> dict:
         base_metadata_schema = super().get_metadata_schema()
 
