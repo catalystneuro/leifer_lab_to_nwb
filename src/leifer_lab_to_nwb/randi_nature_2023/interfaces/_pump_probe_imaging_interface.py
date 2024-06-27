@@ -43,12 +43,16 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
                 GreenChannel=(slice(0, 512), slice(0, 512))
                 RedChannel=(slice(512, 1024), slice(0, 512))
         """
+        super().__init__(
+            pumpprobe_folder_path=pumpprobe_folder_path,
+            channel_name=channel_name,
+            channel_frame_slicing=channel_frame_slicing,
+        )
         if channel_name not in _DEFAULT_CHANNEL_NAMES and channel_frame_slicing is None:
-            message = (
+            raise ValueError(
                 f"A custom `optical_channel_name` was specified ('{channel_name}') and was not one of the "
                 f"known defaults ('{_DEFAULT_CHANNEL_NAMES}'), but no frame slicing pattern was passed."
             )
-            raise ValueError(message=message)
 
         self.channel_name = channel_name
         self.channel_frame_slicing = channel_frame_slicing or _DEFAULT_CHANNEL_FRAME_SLICING[channel_name]
@@ -98,21 +102,6 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             full_slice[2].stop - full_slice[2].start,
         )
 
-    # def get_metadata(self) -> dict:
-    #     one_photon_metadata = super().get_metadata(photon_series_type=self.photon_series_type)
-    #
-    #     # Hardcoded value from lab
-    #     # This is also an average in a sense - the exact depth is tracked by the Piezo and written
-    #     # as a custom DynamicTable in the ExtraOphysMetadataInterface
-    #     # depth_per_pixel = 0.42
-    #
-    #     # one_photon_metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_pixel)
-    #
-    #     return one_photon_metadata
-    #
-    # def get_metadata_schema(self) -> dict:
-    #     return super().get_metadata(photon_series_type=self.photon_series_type)
-
     def add_to_nwbfile(
         self,
         *,
@@ -134,13 +123,13 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         else:
             light_source = nwbfile.devices["MicroscopyLightSource"]
 
-        if "PlanarImagingSpace" not in nwbfile.lab_meta_data:
+        if "PumpProbeImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.PlanarImagingSpace(
-                name="PlanarImagingSpace", description="", microscope=microscope
+                name="PumpProbeImagingSpace", description="", microscope=microscope
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
-            imaging_space = nwbfile.lab_meta_data["PlanarImagingSpace"]
+            imaging_space = nwbfile.lab_meta_data["PumpProbeImagingSpace"]
 
         optical_channel = ndx_microscopy.MicroscopyOpticalChannel(name=self.channel_name, description="", indicator="")
         nwbfile.add_lab_meta_data(lab_meta_data=optical_channel)

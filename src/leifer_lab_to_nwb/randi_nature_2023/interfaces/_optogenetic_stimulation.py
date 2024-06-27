@@ -1,6 +1,7 @@
 import pathlib
 from typing import Union
 
+import ndx_microscopy
 import ndx_patterned_ogen
 import neuroconv
 import numpy
@@ -36,22 +37,11 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
         nwbfile: pynwb.NWBFile,
         metadata: Union[dict, None] = None,
     ) -> None:
-        assert "Microscope" in nwbfile.devices, (
-            "The `Microscope` must be added before this interface! Make sure the call to "
-            "`.run_conversion` for this interface occurs after the `PumpProbeSegmentationInterface`."
-        )
-        microscope = nwbfile.devices["Microscope"]
-
-        assert (
-            "ImageSegmentation" in nwbfile.processing["ophys"].data_interfaces
-            and "PlaneSegmentation" in nwbfile.processing["ophys"]["ImageSegmentation"].plane_segmentations
-        ), (
-            "The `PlaneSegmentation` must be added before this interface! Make sure the call to "
-            "`.run_conversion` for this interface occurs after the `PumpProbeSegmentationInterface`."
-        )
-        image_segmentation = nwbfile.processing["ophys"]["ImageSegmentation"]
-        plane_segmentation = image_segmentation.plane_segmentations["PlaneSegmentation"]
-        imaging_plane = plane_segmentation.imaging_plane
+        if "Microscope" not in nwbfile.devices:
+            microscope = ndx_microscopy.Microscope(name="Microscope")
+            nwbfile.add_device(devices=microscope)
+        else:
+            microscope = nwbfile.devices["Microscope"]
 
         light_source = ndx_patterned_ogen.LightSource(
             name="AmplifiedLaser",
@@ -101,21 +91,40 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
 
         # Assume all targets are unique; if retargeting of the same location is ever enabled, it would be nice
         # to refactor this to make proper reuse of target locations.
+        optical_channel = pynwb.ophys.OpticalChannel(  # TODO: I really wish I didn't need this...
+            name="DummyOpticalChannel",
+            description="A dummy optical channel for ndx-patterned-ogen metadata.",
+            emission_lambda=numpy.nan,
+        )
+        imaging_plane = nwbfile.create_imaging_plane(
+            name="TargetImagingPlane",
+            description="The targeted plane.",
+            indicator="",
+            location="whole brain",
+            excitation_lambda=numpy.nan,
+            device=microscope,
+            optical_channel=optical_channel,
+        )
         targeted_plane_segmentation = pynwb.ophys.PlaneSegmentation(
             name="TargetPlaneSegmentation",
             description="Table for storing the target centroids, defined by a one-voxel mask.",
             imaging_plane=imaging_plane,
         )
         targeted_plane_segmentation.add_column(name="depth_in_um", description="Targeted depth in micrometers.")
-        for target_x_index, target_y_index, depth_in_mm in zip(
+        for target_x_index, target_y_index, depth_in_um in zip(
             self.optogenetic_stimulus_table["optogTargetX"],
             self.optogenetic_stimulus_table["optogTargetY"],
             self.optogenetic_stimulus_table["optogTargetZ"],
         ):
             targeted_plane_segmentation.add_roi(
-                pixel_mask=[(int(target_x_index), int(target_y_index), 1.0)], depth_in_um=depth_in_mm * 1e3
+                pixel_mask=[(int(target_x_index), int(target_y_index), 1.0)], depth_in_um=depth_in_um
             )
+
+        image_segmentation = pynwb.ophys.ImageSegmentation(name="TargetedImageSegmentation")
         image_segmentation.add_plane_segmentation(targeted_plane_segmentation)
+
+        ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")
+        ophys_module.add(image_segmentation)
 
         # Hardcoded duration from the methods section of paper
         # TODO: may have to adjust this for unc-31 mutant strain subjects
