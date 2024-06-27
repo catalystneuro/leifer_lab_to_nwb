@@ -3,6 +3,7 @@ from typing import Literal
 
 import numpy
 import pandas
+import pynwb.ophys
 from neuroconv.basedatainterface import BaseDataInterface
 from pynwb import NWBFile
 
@@ -21,6 +22,8 @@ class PumpProbeSegmentationInterface(BaseDataInterface):
         super().__init__(pumpprobe_folder_path=pumpprobe_folder_path, channel_name=channel_name)
         pumpprobe_folder_path = pathlib.Path(pumpprobe_folder_path)
 
+        self.channel_name = channel_name
+
         # Other interfaces use CamelCase to refer to the NWB object the channel data will end up as
         # The files on the other hand are all lower case
         lower_channel_name = channel_name.lower()
@@ -37,56 +40,23 @@ class PumpProbeSegmentationInterface(BaseDataInterface):
         with open(brains_file_path, "r") as io:
             self.brains_info = json.load(fp=io)
 
-        # Reshape coordinates to match more directly
-        reshaped_xyz_coordinates = []
-        counter = 0
-        for number_of_rois_in_volume in self.brains_info["nInVolume"]:
-            xyz_coordinates_per_volume = []
-            for volume_index in range(number_of_rois_in_volume):
-                xyz_coordinates_per_volume.append(
-                    (
-                        self.brains_info["coordZYX"][counter + volume_index][2],
-                        self.brains_info["coordZYX"][counter + volume_index][1],
-                        self.brains_info["coordZYX"][counter + volume_index][0],
-                    )
-                )
-
-            reshaped_xyz_coordinates.append(xyz_coordinates_per_volume)
-            counter += number_of_rois_in_volume
-
-        # ...then the frameDetails has timestamps for a subset of the frame indices
+        # Technically every frame at every depth has a timestamp (and these are in the source MicroscopySeries)
+        # But the fluorescence is aggregated per volume (over time) and so the timestamps are averaged over those frames
         timestamps_file_path = pumpprobe_folder_path / "framesDetails.txt"
         timestamps_table = pandas.read_table(filepath_or_buffer=timestamps_file_path, index_col=False)
+        timestamps = numpy.array(timestamps_table["Timestamp"])
 
-        self.timestamps = numpy.array(timestamps_table["Timestamp"])
+        averaged_timestamps = numpy.empty(shape=self.signal_info.data[0], dtype=numpy.float64)
+        z_of_frame_lengths = [len(entry) for entry in self.brains_info["zOfFrame"]]
+        cumulative_sum_of_lengths = numpy.cumsum(z_of_frame_lengths)
+        for volume_index, (z_of_frame_length, cumulative_sum) in enumerate(
+            zip(z_of_frame_lengths, cumulative_sum_of_lengths)
+        ):
+            start_frame = cumulative_sum - z_of_frame_length
+            end_frame = cumulative_sum
+            averaged_timestamps[volume_index] = numpy.mean(timestamps[start_frame:end_frame])
 
-        # Hardcoding this for now
-        # image_shape = (512, 512)
-
-    # def get_metadata(self) -> dict:
-    #     metadata = super().get_metadata()
-    #
-    #     # Hardcoded value from lab
-    #     # This is also an average in a sense - the exact depth is tracked by the Piezo and written
-    #     # as a custom DynamicTable in the ExtraOphysMetadataInterface
-    #     depth_per_pixel = 0.42
-    #
-    #     # one_photon_metadata["Ophys"]["grid_spacing"] = (um_per_pixel, um_per_pixel, um_per_pixel)
-    #
-    #     metadata["Ophys"]["ImageSegmentation"]["plane_segmentations"][0]["name"] = self.plane_segmentation_name
-    #
-    #     metadata["Ophys"]["Fluorescence"]= {'name': 'Fluorescence', self.plane_segmentation_name: {'raw': {
-    #         'name': 'BaselineSignal', 'description': 'Array of raw fluorescence traces.', 'unit': 'n.a.'}}}
-    #     metadata["Ophys"]["DfOverF"] = {'name': 'Derivative', self.plane_segmentation_name: {
-    #         'dff': {'name': 'DerivativeOfSignal', 'description': 'Array of filtered fluorescence traces; '
-    #                                                              'approximately the derivative (unnormalized) of the '
-    #                                                              'baseline signal'
-    #                                                              '.', 'unit': 'n.a.'}}}
-    #
-    #     return metadata
-    #
-    # def get_metadata_schema(self) -> dict:
-    #     return super().get_metadata(photon_series_type="OnePhotonSeries")
+        self.timestamps_per_volume = averaged_timestamps
 
     def add_to_nwbfile(
         self,
@@ -96,4 +66,80 @@ class PumpProbeSegmentationInterface(BaseDataInterface):
         stub_test: bool = False,
         stub_frames: int = 70,
     ) -> None:
-        pass
+        # TODO: probably centralize this in a helper function
+        if "Microscope" not in nwbfile.devices:
+            microscope = ndx_microscopy.Microscope(name="Microscope")
+            nwbfile.add_device(devices=microscope)
+        else:
+            microscope = nwbfile.devices["Microscope"]
+
+        if "PumpProbeImagingSpace" not in nwbfile.lab_meta_data:
+            imaging_space = ndx_microscopy.PlanarImagingSpace(
+                name="PumpProbeImagingSpace", description="", microscope=microscope
+            )
+            nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
+        else:
+            imaging_space = nwbfile.lab_meta_data["PumpProbeImagingSpace"]
+
+        plane_segmentation = ndx_microscopy.MicroscopyPlaneSegmentation(
+            name=f"PumpProbe{self.channel_name}PlaneSegmentation",
+            description=(
+                "The PumpProbe segmentation of the C. elegans brain. "
+                "Only some of these local ROI IDs match the NeuroPAL IDs with cell labels. "
+                "Note that the Z-axis of the `voxel_mask` is in reference to the index of that depth in its scan cycle."
+            ),
+            imaging_space=imaging_space,
+        )
+        plane_segmentation.add_column(
+            name="neuropal_ids",
+            description=(
+                "The NeuroPAL ROI ID that has been matched to this PumpProbe ID. Blank means the ROI was not matched."
+            ),
+        )
+
+        # There are coords for each 'nInVolume', but only the ones for the span of the 30th frame are used
+        number_of_rois = self.signal_info.data.shape[1]
+        labeled_frame_index = 30
+        sub_start = sum(self.brains_info["nInVolume"][:labeled_frame_index])
+        sub_coordinates = self.brains_info["coordZYX"][sub_start : (sub_start + number_of_rois)]
+
+        number_of_rois = self.brains_info["nInVolume"][labeled_frame_index]
+        for pump_probe_roi_id in range(number_of_rois):
+            coordinate_info = sub_coordinates[pump_probe_roi_id]
+            coordinates = (coordinate_info[2], coordinate_info[1], coordinate_info[0], 1.0)
+
+            plane_segmentation.add_row(
+                id=pump_probe_roi_id,
+                voxel_mask=[coordinates],  # TODO: add rest of box
+                neuropal_ids=self.brains_info["labels"][labeled_frame_index][pump_probe_roi_id].replace(" ", ""),
+            )
+
+        # TODO: might prefer to combine plane segmentations over image segmentation objects
+        # to reduce clutter
+        image_segmentation = ndx_microscopy.MicroscopyImageSegmentation(
+            name=f"PumpProbe{self.channel_name}ImageSegmentation", microscopy_plane_segmentations=[plane_segmentation]
+        )
+
+        ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")
+        ophys_module.add(image_segmentation)
+
+        plane_segmentation_region = pynwb.ophys.DynamicTableRegion(
+            name=f"PumpProbe{self.channel_name}PlaneSegmentationRegion",
+            description="",
+            data=[x for x in range(number_of_rois)],
+            table=plane_segmentation,
+        )
+        roi_response_series = RoiResponseSeries(
+            name=f"{self.channel_name}RoiResponseSeries",
+            description=(
+                f"Average baseline fluorescence for the '{self.channel_name}' optical channel extracted from the raw "
+                "imaging and averaged over a volume defined as a complete scan cycle over volumetric depths."
+            ),
+            data=self.signal_info.data,
+            rois=plane_segmentation_region,
+            unit="n.a.",
+            timestamps=self.timestamps_per_volume,
+        )
+
+        fluorescence = Fluorescence(roi_response_series=roi_response_series)
+        ophys_module.add(fluorescence)
