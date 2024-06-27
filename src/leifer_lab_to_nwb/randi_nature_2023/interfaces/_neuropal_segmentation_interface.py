@@ -58,7 +58,7 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
-            imaging_space = nwbfile.lab_meta_data["PlanarImagingSpace"]
+            imaging_space = nwbfile.lab_meta_data["NeuroPALImagingSpace"]
 
         plane_segmentation = ndx_microscopy.MicroscopyPlaneSegmentation(
             name="NeuroPALPlaneSegmentation",

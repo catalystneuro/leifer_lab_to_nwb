@@ -149,6 +149,6 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
 
         # TODO: should probably combine all of these into a single container
         container = ndx_microscopy.MicroscopyResponseSeriesContainer(
-            name="Signals", microscopy_response_series=[microscopy_response_series]
+            name=f"{self.channel_name}Signals", microscopy_response_series=[microscopy_response_series]
         )
         ophys_module.add(container)
