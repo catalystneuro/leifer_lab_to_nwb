@@ -61,7 +61,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             and self.brains_info["nInVolume"][0] == len(self.brains_info["labels_comments"][0])
         ), "Length of contents does not match number of ROIs."
 
-        # Additional homogeneity check for imaging compatability
+        # Additional homogeneity check for imaging compatibility
         json_depth_length = len(self.brains_info["zOfFrame"][0])
         assert (
             json_depth_length == number_of_depths
