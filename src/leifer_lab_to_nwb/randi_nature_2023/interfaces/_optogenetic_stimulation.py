@@ -84,8 +84,9 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
             ),
             # Calculated manually from the 'source data' of Supplementary Figure 2a
             # https://www.nature.com/articles/s41586-023-06683-4#MOESM10
-            lateral_point_spread_function_in_um="(-0.245, 0.059) ± (0.396, 0.264)",
-            axial_point_spread_function_in_um="0.444 ± 0.536",
+            # via https://github.com/catalystneuro/leifer_lab_to_nwb/issues/5#issuecomment-2195497434
+            lateral_point_spread_function_in_um="(-0.246, 2.21) ± (0.045, 1.727)",
+            axial_point_spread_function_in_um="0.540 ± 1.984",
         )
         nwbfile.add_lab_meta_data(temporal_focusing)
 
