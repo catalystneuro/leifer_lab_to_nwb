@@ -1,14 +1,16 @@
+import json
 import pathlib
+import pickle
 from typing import Literal
 
+import ndx_microscopy
+import neuroconv
 import numpy
 import pandas
-import pynwb.ophys
-from neuroconv.basedatainterface import BaseDataInterface
-from pynwb import NWBFile
+import pynwb
 
 
-class PumpProbeSegmentationInterface(BaseDataInterface):
+class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
 
     def __init__(self, *, pumpprobe_folder_path: str | pathlib.Path, channel_name: Literal["Green", "Red"] | str):
         """
@@ -30,11 +32,15 @@ class PumpProbeSegmentationInterface(BaseDataInterface):
         signal_file_path = pumpprobe_folder_path / f"{lower_channel_name}.pickle"
         with open(file=signal_file_path, mode="rb") as io:
             self.signal_info = pickle.load(file=io)
-        assert (
-            self.signal_info["info"]["method"] == "box"
-            and self.signal_info["info"]["ref_index"] == "30"
-            and self.signal_info["info"]["version"] == "1.5"
-        ), "Unimplemented method detected for mask type."
+
+        mask_type_info = {key: self.signal_info.info[key] for key in ["method", "ref_index", "version"]}
+        expected_mask_type_info = {"method": "box", "ref_index": 30, "version": "1.5"}
+        assert mask_type_info == expected_mask_type_info, (
+            "Unimplemented method detected for mask type."
+            f"\n\nReceived: {mask_type_info}"
+            f"\n\nExpected: {expected_mask_type_info}"
+            "\n\nPlease raise an issue to have the new mask type incorporated."
+        )
 
         brains_file_path = pumpprobe_folder_path / "brains.json"
         with open(brains_file_path, "r") as io:
@@ -46,7 +52,7 @@ class PumpProbeSegmentationInterface(BaseDataInterface):
         timestamps_table = pandas.read_table(filepath_or_buffer=timestamps_file_path, index_col=False)
         timestamps = numpy.array(timestamps_table["Timestamp"])
 
-        averaged_timestamps = numpy.empty(shape=self.signal_info.data[0], dtype=numpy.float64)
+        averaged_timestamps = numpy.empty(shape=self.signal_info.data.shape[0], dtype=numpy.float64)
         z_of_frame_lengths = [len(entry) for entry in self.brains_info["zOfFrame"]]
         cumulative_sum_of_lengths = numpy.cumsum(z_of_frame_lengths)
         for volume_index, (z_of_frame_length, cumulative_sum) in enumerate(
@@ -61,7 +67,7 @@ class PumpProbeSegmentationInterface(BaseDataInterface):
     def add_to_nwbfile(
         self,
         *,
-        nwbfile: NWBFile,
+        nwbfile: pynwb.NWBFile,
         metadata: dict | None = None,
         stub_test: bool = False,
         stub_frames: int = 70,
@@ -124,22 +130,25 @@ class PumpProbeSegmentationInterface(BaseDataInterface):
         ophys_module.add(image_segmentation)
 
         plane_segmentation_region = pynwb.ophys.DynamicTableRegion(
-            name=f"PumpProbe{self.channel_name}PlaneSegmentationRegion",
+            name="table_region",  # Name must be exactly this
             description="",
             data=[x for x in range(number_of_rois)],
             table=plane_segmentation,
         )
-        roi_response_series = RoiResponseSeries(
-            name=f"{self.channel_name}RoiResponseSeries",
+        microscopy_response_series = ndx_microscopy.MicroscopyResponseSeries(
+            name=f"{self.channel_name}Signal",
             description=(
                 f"Average baseline fluorescence for the '{self.channel_name}' optical channel extracted from the raw "
                 "imaging and averaged over a volume defined as a complete scan cycle over volumetric depths."
             ),
             data=self.signal_info.data,
-            rois=plane_segmentation_region,
+            table_region=plane_segmentation_region,
             unit="n.a.",
             timestamps=self.timestamps_per_volume,
         )
 
-        fluorescence = Fluorescence(roi_response_series=roi_response_series)
-        ophys_module.add(fluorescence)
+        # TODO: should probably combine all of these into a single container
+        container = ndx_microscopy.MicroscopyResponseSeriesContainer(
+            name="Signals", microscopy_response_series=[microscopy_response_series]
+        )
+        ophys_module.add(container)
