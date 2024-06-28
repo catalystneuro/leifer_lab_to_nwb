@@ -79,7 +79,8 @@ conversion_options = {
     "NeuroPALImagingInterface": {"stub_test": STUB_TEST},
 }
 
-nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"sub-{subject_id}_ses-{session_string}.nwb"
+file_stem = f"sub-{subject_id}_ses-{session_string}" if not STUB_TEST else f"{session_string}_stub"
+nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"{file_stem}.nwb"
 converter.run_conversion(
     nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True, conversion_options=conversion_options
 )
