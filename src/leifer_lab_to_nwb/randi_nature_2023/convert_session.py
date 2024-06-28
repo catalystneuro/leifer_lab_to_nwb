@@ -72,11 +72,11 @@ metadata["Subject"]["growth_stage"] = "YA"
 metadata["Subject"]["cultivation_temp"] = 20.0
 
 conversion_options = {
-    "PumpProbeImagingInterfaceGreen": {"stub_test": True},
-    "PumpProbeImagingInterfaceRed": {"stub_test": True},
-    "PumpProbeSegmentationInterfaceGreed": {"stub_test": True},
-    "PumpProbeSegmentationInterfaceRed": {"stub_test": True},
-    "NeuroPALImagingInterface": {"stub_test": True},
+    "PumpProbeImagingInterfaceGreen": {"stub_test": STUB_TEST},
+    "PumpProbeImagingInterfaceRed": {"stub_test": STUB_TEST},
+    "PumpProbeSegmentationInterfaceGreed": {"stub_test": STUB_TEST},
+    "PumpProbeSegmentationInterfaceRed": {"stub_test": STUB_TEST},
+    "NeuroPALImagingInterface": {"stub_test": STUB_TEST},
 }
 
 nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"sub-{subject_id}_ses-{session_string}.nwb"

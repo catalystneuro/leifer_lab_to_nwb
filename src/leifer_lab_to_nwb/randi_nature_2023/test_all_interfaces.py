@@ -33,7 +33,7 @@ SESSION_FOLDER_PATH = BASE_FOLDER_PATH / "20211104"
 PUMPPROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
 MULTICOLOR_FOLDER_PATH = SESSION_FOLDER_PATH / "multicolorworm_20211104_162630"
 
-NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
+NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "test_nwbfiles"
 
 # *************************************************************************
 # Everything below this line is automated and should not need to be changed
