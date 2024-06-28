@@ -37,11 +37,16 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
         nwbfile: pynwb.NWBFile,
         metadata: Union[dict, None] = None,
     ) -> None:
-        if "Microscope" not in nwbfile.devices:
-            microscope = ndx_microscopy.Microscope(name="Microscope")
-            nwbfile.add_device(devices=microscope)
-        else:
-            microscope = nwbfile.devices["Microscope"]
+        # if "Microscope" not in nwbfile.devices:
+        #     microscope = ndx_microscopy.Microscope(name="Microscope")
+        #     nwbfile.add_device(devices=microscope)
+        # else:
+        #     microscope = nwbfile.devices["Microscope"]
+
+        # TODO: reusing the Microscope device creates an invalid file
+        # NWB team has been notified about the issue, until then, we need to create a dummy device
+        ogen_device = pynwb.ophys.Device(name="OptogeneticDevice", description="")
+        nwbfile.add_device(ogen_device)
 
         light_source = ndx_patterned_ogen.LightSource(
             name="AmplifiedLaser",
@@ -64,7 +69,8 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
             excitation_lambda=850.0,  # nm
             effector="GUR-3/PRDX-2",
             location="whole brain",
-            device=microscope,
+            # device=microscope,
+            device=ogen_device,
             light_source=light_source,
         )
         nwbfile.add_ogen_site(site)
@@ -103,7 +109,8 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
             indicator="",
             location="whole brain",
             excitation_lambda=numpy.nan,
-            device=microscope,
+            # device=microscope,
+            device=ogen_device,
             optical_channel=optical_channel,
         )
         targeted_plane_segmentation = pynwb.ophys.PlaneSegmentation(

@@ -2,6 +2,7 @@
 
 import datetime
 import pathlib
+import warnings
 
 import pandas
 import pynwb
@@ -28,6 +29,9 @@ NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
 # *************************************************************************
 # Everything below this line is automated and should not need to be changed
 # *************************************************************************
+
+# Suppress false warning
+warnings.filterwarnings(action="ignore", message="The linked table for DynamicTableRegion*", category=UserWarning)
 
 NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
 
