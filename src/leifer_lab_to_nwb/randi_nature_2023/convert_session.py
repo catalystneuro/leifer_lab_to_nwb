@@ -40,9 +40,6 @@ session_start_time = session_start_time.replace(tzinfo=tz.gettz("US/Eastern"))
 PUMPPROBE_FOLDER_PATH = str(PUMPPROBE_FOLDER_PATH)
 MULTICOLOR_FOLDER_PATH = str(MULTICOLOR_FOLDER_PATH)
 
-# Initialize interfaces
-data_interfaces = list()
-
 source_data = {
     "PumpProbeImagingInterfaceGreen": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
     "PumpProbeImagingInterfaceRed": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
@@ -54,7 +51,6 @@ source_data = {
     "ExtraOphysMetadataInterface": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
 }
 
-# Initialize converter
 converter = RandiNature2023Converter(source_data=source_data)
 
 metadata = converter.get_metadata()
@@ -79,8 +75,14 @@ conversion_options = {
     "NeuroPALImagingInterface": {"stub_test": STUB_TEST},
 }
 
-file_stem = f"sub-{subject_id}_ses-{session_string}" if not STUB_TEST else f"{session_string}_stub"
-nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"{file_stem}.nwb"
+if STUB_TEST:
+    nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"{session_string}_stub.nwb"
+else:
+    # Name and nest the file in a DANDI compliant way
+    subject_folder_path = NWB_OUTPUT_FOLDER_PATH / f"sub-{subject_id}"
+    subject_folder_path.mkdir(exist_ok=True)
+    nwbfile_path = subject_folder_path / f"sub-{subject_id}_ses-{session_string}.nwb"
+
 converter.run_conversion(
     nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True, conversion_options=conversion_options
 )
