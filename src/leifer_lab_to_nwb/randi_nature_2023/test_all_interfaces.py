@@ -34,7 +34,7 @@ SESSION_FOLDER_PATH = BASE_FOLDER_PATH / "20211104"
 PUMPPROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
 MULTICOLOR_FOLDER_PATH = SESSION_FOLDER_PATH / "multicolorworm_20211104_162630"
 
-NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "test_nwbfiles"
+NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
 
 # *************************************************************************
 # Everything below this line is automated and should not need to be changed
@@ -44,6 +44,8 @@ NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "test_nwbfiles"
 warnings.filterwarnings(action="ignore", message="The linked table for DynamicTableRegion*", category=UserWarning)
 
 NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
+test_folder_path = NWB_OUTPUT_FOLDER_PATH / "test_interfaces"
+test_folder_path.mkdir(exist_ok=True)
 
 # Parse session start time from the pumpprobe path
 session_string = PUMPPROBE_FOLDER_PATH.stem.removeprefix("pumpprobe_")
@@ -88,8 +90,6 @@ interfaces_classes_to_test = {
 
 
 for test_case_name, interface_options in interfaces_classes_to_test.items():
-    nwbfile_path = NWB_OUTPUT_FOLDER_PATH / f"test_{test_case_name}.nwb"
-
     source_data = {test_case_name: interface_options["source_data"]}
     converter = RandiNature2023Converter(source_data=source_data)
 
@@ -117,6 +117,7 @@ for test_case_name, interface_options in interfaces_classes_to_test.items():
 
     print("Added to in-memory NWBFile object!")
 
+    nwbfile_path = test_folder_path / f"test_{test_case_name}.nwb"
     converter.run_conversion(
         nwbfile_path=nwbfile_path, metadata=metadata, conversion_options=conversion_options, overwrite=True
     )

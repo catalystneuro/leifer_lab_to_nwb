@@ -115,8 +115,10 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         chunk_shape = (1, 1, self.data_shape[-2], self.data_shape[-1])
 
         # Best we can do is limit the number of depths that are written by stub
+        # TODO: add ndx-micorscopy support to NeuroConv BackendConfiguration to avoid need for H5DataIO
         imaging_data = self.data if not stub_test else self.data[:stub_depths, :, :, :]
         data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(data=imaging_data, chunk_shape=chunk_shape)
+        data_iterator = pynwb.H5DataIO(data_iterator, compression="gzip")
 
         depth_per_frame_in_um = self.brains_info["zOfFrame"][0]
 

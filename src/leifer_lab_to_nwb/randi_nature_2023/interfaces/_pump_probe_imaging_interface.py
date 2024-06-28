@@ -109,6 +109,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         metadata: dict | None = None,
         stub_test: bool = False,
         stub_frames: int = 70,
+        display_progress: bool = True,
     ) -> None:
         # TODO: enhance all metadata
         if "Microscope" not in nwbfile.devices:
@@ -143,8 +144,12 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         num_frames_per_chunk = int(chunk_size_bytes / frame_size_bytes)
         chunk_shape = (max(min(num_frames_per_chunk, num_frames), 1), x, y)
 
+        # TODO: add ndx-micorscopy support to NeuroConv BackendConfiguration to avoid need for H5DataIO
         imaging_data = self.imaging_data_for_channel if not stub_test else self.imaging_data_for_channel[:stub_frames]
-        data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(data=imaging_data, chunk_shape=chunk_shape)
+        data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(
+            data=imaging_data, chunk_shape=chunk_shape, display_progress=display_progress
+        )
+        data_iterator = pynwb.H5DataIO(data_iterator, compression="gzip")
 
         timestamps = self.timestamps if not stub_test else self.timestamps[:stub_frames]
 
