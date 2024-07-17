@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -23,8 +23,7 @@ keywords = ["leifer", "C elegans", "NWB", "conversion", "open data", "microscopy
 
 classifiers = [
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: BSD License",
     "Intended Audience :: Developers",
     "Operating System :: Microsoft :: Windows",
@@ -42,7 +41,7 @@ dependencies = [
 
 [tool.black]
 line-length = 120
-target-version = ["py310", "py311"]
+target-version = ["py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -61,7 +60,18 @@ extend-exclude = '''
 )/
 '''
 
-[tool.isort]
-profile = "black"
-reverse_relative = true
-known_first_party = ["leifer_lab_to_nwb"]
+[tool.ruff]
+exclude = [
+  "*/__init__.py"
+]
+
+[tool.ruff.lint.isort]
+relative-imports-order = "closest-to-furthest"
+known-first-party = ["leifer_lab_to_nwb"]
+
+
+
+[tool.codespell]
+skip = '.git*,*.pdf,*.css'
+check-hidden = true
+ignore-words-list = 'assertin'  # Should be able to remove on next codespell release
