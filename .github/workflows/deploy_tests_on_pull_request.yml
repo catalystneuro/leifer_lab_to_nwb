@@ -9,4 +9,4 @@ concurrency:  # Cancel previous workflows on the same pull request
 
 jobs:
   DevTests:
-    uses: catalystneuro/leifer-lab-to-nwb/.github/workflows/testing_dev.yml@main
+    uses: ./.github/workflows/testing_dev.yml
