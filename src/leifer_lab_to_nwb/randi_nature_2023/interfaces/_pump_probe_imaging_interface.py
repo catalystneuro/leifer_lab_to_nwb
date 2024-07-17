@@ -1,5 +1,4 @@
 import pathlib
-import shutil
 from typing import Literal
 
 import ndx_microscopy

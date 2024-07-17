@@ -10,20 +10,11 @@ import datetime
 import pathlib
 import warnings
 
-import pandas
 import pynwb
 from dateutil import tz
 from pynwb.testing.mock.file import mock_NWBFile
 
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
-from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
-    ExtraOphysMetadataInterface,
-    NeuroPALImagingInterface,
-    NeuroPALSegmentationInterface,
-    OptogeneticStimulationInterface,
-    PumpProbeImagingInterface,
-    PumpProbeSegmentationInterface,
-)
 
 # Define base folder of source data
 # Change these as needed on new systems
