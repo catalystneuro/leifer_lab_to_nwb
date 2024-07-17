@@ -13,7 +13,7 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     needs: [run-daily-tests]
-    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    if: failure()
     steps:
     - uses: dawidd6/action-send-mail@v3
       with:
