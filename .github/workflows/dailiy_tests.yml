@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "0 16 * * *"  # Daily at noon EST
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   run-daily-tests:
