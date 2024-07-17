@@ -8,7 +8,7 @@ on:
 jobs:
 
   run-daily-tests:
-    uses: ./.github/workflows/testing.yml
+    uses: ./.github/workflows/testing_dev.yml
 
   notify:
     runs-on: ubuntu-latest
