@@ -58,7 +58,7 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
-            imaging_space = nwbfile.lab_meta_data["PlanarImagingSpace"]
+            imaging_space = nwbfile.lab_meta_data["NeuroPALImagingSpace"]
 
         plane_segmentation = ndx_microscopy.MicroscopyPlaneSegmentation(
             name="NeuroPALPlaneSegmentation",
@@ -81,7 +81,7 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
         number_of_rois = self.brains_info["nInVolume"][0]
         for neuropal_roi_id in range(number_of_rois):
             coordinate_info = self.brains_info["coordZYX"][neuropal_roi_id]
-            coordinates = (coordinate_info[1], coordinate_info[2], coordinate_info[0], 1.0)
+            coordinates = (coordinate_info[2], coordinate_info[1], coordinate_info[0], 1.0)
 
             plane_segmentation.add_row(
                 id=neuropal_roi_id,
