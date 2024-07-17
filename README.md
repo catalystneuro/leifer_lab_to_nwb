@@ -52,6 +52,6 @@ pip install --requirement src/leifer_lab_to_nwb/randi_nature_2023/requirements.t
 
 
 
-### Usage: convert a single session of your experiment
+## Usage: convert a single session of your experiment
 
 TODO
