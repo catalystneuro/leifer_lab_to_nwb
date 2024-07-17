@@ -1,9 +1,6 @@
 name: Full Tests
 on:
   workflow_call:
-    secrets:
-      CODECOV_TOKEN:
-        required: true
 
 jobs:
   run:

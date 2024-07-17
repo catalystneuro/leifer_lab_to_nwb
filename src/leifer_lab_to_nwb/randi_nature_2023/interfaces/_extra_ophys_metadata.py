@@ -28,8 +28,8 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
 
     def add_to_nwbfile(self, nwbfile: pynwb.NWBFile, metadata: dict):
         # Plane depths
-        volt_per_um = 0.125  # Hardcoded value by the lab
-        depth_in_um_per_pixel = 0.42  # Hardcoded value by the lab
+        # volt_per_um = 0.125  # Hardcoded value by the lab
+        # depth_in_um_per_pixel = 0.42  # Hardcoded value by the lab
 
         # zScan contents
 
@@ -73,18 +73,18 @@ class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
         # TODO: could include as a simple TimeSeries with same timestamps as volumetric photon series but values 1, -1
 
         # Extra frameSynchronous information
-        frame_sync_to_nwb_names = {
-            "Piezo position (V)": "piezo_position_in_volume",
-            "Piezo direction (+-1)": "piezo_direction",
-            "Ludl X": "ludl_x",
-            "Ludl Y": "ludl_y",
-        }
-        frame_sync_scanning_column_descriptions = {
-            "piezo_position_in_volume": "",
-            "piezo_direction": "",
-            "ludl_x": "",
-            "ludl_y": "",
-        }
+        # frame_sync_to_nwb_names = {
+        #     "Piezo position (V)": "piezo_position_in_volume",
+        #     "Piezo direction (+-1)": "piezo_direction",
+        #     "Ludl X": "ludl_x",
+        #     "Ludl Y": "ludl_y",
+        # }
+        # frame_sync_scanning_column_descriptions = {
+        #     "piezo_position_in_volume": "",
+        #     "piezo_direction": "",
+        #     "ludl_x": "",
+        #     "ludl_y": "",
+        # }
 
         # TODO: unpack frameSync content, likely as several TimeSeries with same timestamps as volumetric photon series
         # Will require some reshaping into the volumes since these are flattened frames

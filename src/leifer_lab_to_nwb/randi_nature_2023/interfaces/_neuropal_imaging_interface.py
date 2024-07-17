@@ -1,12 +1,9 @@
 import json
 import pathlib
-import shutil
-from typing import Literal
 
 import ndx_microscopy
 import neuroconv
 import numpy
-import pandas
 import pynwb
 
 

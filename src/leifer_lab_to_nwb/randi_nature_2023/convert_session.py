@@ -4,8 +4,6 @@ import datetime
 import pathlib
 import warnings
 
-import pandas
-import pynwb
 from dateutil import tz
 
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter

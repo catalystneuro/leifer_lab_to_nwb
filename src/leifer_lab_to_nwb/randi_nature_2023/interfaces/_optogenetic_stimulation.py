@@ -1,7 +1,6 @@
 import pathlib
 from typing import Union
 
-import ndx_microscopy
 import ndx_patterned_ogen
 import neuroconv
 import numpy
