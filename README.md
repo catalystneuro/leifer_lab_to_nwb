@@ -24,13 +24,12 @@ You can then activate the isolated environment with:
 conda activate <name of environment>
 ```
 
-For the time being you will need to install `git` using:
+You may also need to install `git` and `pip` using:
 
 ```bash
 conda install git
+conda install pip
 ```
-
-though I may eventually be able to remove this necessity.
 
 
 
@@ -77,13 +76,13 @@ This, in particular, will have to be updated periodically to keep the version re
 First, navigate to the directory containing the NWB output folder specified above. If you have not already downloaded a local partial copy of the dandiset you wish to upload to, then start by calling:
 
 ```bash
-dandi download DANDI:< dandiset ID >  --dandiset.yaml
+dandi download DANDI:< dandiset ID >  --download dandiset.yaml
 ```
 
 For example, for the dandiset https://dandiarchive.org/dandiset/001075, you would call
 
 ```bash
-dandi download DANDI:001075  --dandiset.yaml
+dandi download DANDI:001075  --download dandiset.yaml
 ```
 
 Next, navigate into the directory created and call:
@@ -104,4 +103,4 @@ and if there are any invalidations, raise an issue on this repository. Then to u
 dandi upload
 ```
 
-and double-check on the DANDI website that the files show up after the upload bar reaches completion.
+and double-check the DANDI website to ensure the files show up after the upload bar reaches completion.
