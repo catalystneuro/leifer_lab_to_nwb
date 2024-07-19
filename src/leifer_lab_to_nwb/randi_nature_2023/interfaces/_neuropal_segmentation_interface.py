@@ -91,7 +91,7 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
                 labels_comments=self.brains_info["labels_comments"][0][neuropal_roi_id],
             )
 
-        image_segmentation = ndx_microscopy.MicroscopyImageSegmentation(
+        image_segmentation = ndx_microscopy.MicroscopySegmentations(
             name="NeuroPALImageSegmentation", microscopy_plane_segmentations=[plane_segmentation]
         )
 

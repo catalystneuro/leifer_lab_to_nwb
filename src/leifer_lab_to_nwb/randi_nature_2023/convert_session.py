@@ -4,6 +4,7 @@ import datetime
 import pathlib
 import warnings
 
+import yaml
 from dateutil import tz
 
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
@@ -17,7 +18,10 @@ STUB_TEST = False
 # Change these as needed on new systems
 BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
 SESSION_FOLDER_PATH = BASE_FOLDER_PATH / "20211104"
-# LOGBOOK_FILE_PATH = SESSION_FOLDER_PATH / "logbook.txt"
+SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
+
+# The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry
+SUBJECT_ID = 1
 
 PUMPPROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
 MULTICOLOR_FOLDER_PATH = SESSION_FOLDER_PATH / "multicolorworm_20211104_162630"
@@ -76,15 +80,23 @@ metadata["NWBFile"]["lab"] = "Leifer Lab"
 metadata["NWBFile"]["experimenter"] = ["Randi, Francesco"]
 metadata["NWBFile"]["keywords"] = ["C. elegans", "optogenetics", "functional connectivity"]
 
-subject_id = session_start_time.strftime("%y%m%d")
-metadata["Subject"]["subject_id"] = subject_id
-metadata["Subject"]["species"] = "Caenorhabditis elegans"
-metadata["Subject"]["strain"] = "AKS471.2.d"
+with open(file=SUBJECT_INFO_FILE_PATH, mode="r") as stream:
+    all_subject_info = yaml.load(stream=stream, Loader=yaml.SafeLoader)
+
+this_subject_info = all_subject_info[SUBJECT_ID]
+assert (
+    this_subject_info["session_id"] == SUBJECT_ID
+), "Mismatch in subject ID between key and info value! Please double check the subject metadata YAML file."
+
+metadata["Subject"]["subject_id"] = SUBJECT_ID
+
+lab_sex_mapping = {"H": "XX", "M": "XO"}
+metadata["Subject"]["c_elegans_sex"] = lab_sex_mapping[this_subject_info["sex"]]
+
+metadata["Subject"]["strain"] = this_subject_info["public_strain"]
 metadata["Subject"]["genotype"] = "WT"
-metadata["Subject"]["sex"] = "XX"
 metadata["Subject"]["age"] = "P1D"
-# metadata["Subject"]["growth_stage_time"] = pandas.Timedelta(hours=2, minutes=30).isoformat()  # TODO: request
-metadata["Subject"]["growth_stage"] = "L4"
+metadata["Subject"]["growth_stage"] = this_subject_info["growth_stage"]
 metadata["Subject"]["cultivation_temp"] = 20.0
 
 conversion_options = {
@@ -96,15 +108,15 @@ conversion_options = {
 }
 
 if STUB_TEST:
-    stub_folder_path = NWB_OUTPUT_FOLDER_PATH / "stubs"
+    stub_folder_path = NWB_OUTPUT_FOLDER_PATH.parent / "stub_nwbfiles"
     stub_folder_path.mkdir(exist_ok=True)
     nwbfile_path = stub_folder_path / f"{session_string}_stub.nwb"
 else:
     # Name and nest the file in a DANDI compliant way
-    subject_folder_path = NWB_OUTPUT_FOLDER_PATH / f"sub-{subject_id}"
+    subject_folder_path = NWB_OUTPUT_FOLDER_PATH / f"sub-{SUBJECT_ID}"
     subject_folder_path.mkdir(exist_ok=True)
     dandi_session_string = session_string.replace("_", "-")
-    nwbfile_path = subject_folder_path / f"sub-{subject_id}_ses-{dandi_session_string}.nwb"
+    nwbfile_path = subject_folder_path / f"sub-{SUBJECT_ID}_ses-{dandi_session_string}.nwb"
 
 converter.run_conversion(
     nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True, conversion_options=conversion_options

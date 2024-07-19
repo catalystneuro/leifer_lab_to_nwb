@@ -27,8 +27,7 @@ conda activate <name of environment>
 You may also need to install `git` and `pip` using:
 
 ```bash
-conda install git
-conda install pip
+conda install git pip
 ```
 
 
@@ -40,13 +39,13 @@ In the isolated environment, install this package by calling:
 ```bash
 git clone https://github.com/catalystneuro/leifer-lab-to-nwb
 cd leifer-lab-to-nwb
-pip install -e .
+pip install .
 ```
 
 Then to install the specific set of dependencies for a particular conversion, such as `randi_nature_2023`:
 
 ```bash
-pip install --requirement src/leifer_lab_to_nwb/randi_nature_2023/requirements.txt
+pip install .[randi_nature_2023]
 ```
 
 
@@ -56,6 +55,7 @@ pip install --requirement src/leifer_lab_to_nwb/randi_nature_2023/requirements.t
 TODO
 
 
+
 ## Upload to DANDI
 
 To upload to the [DANDI Archive](https://dandiarchive.org/), again create and use an isolated environment, such as:
@@ -63,12 +63,8 @@ To upload to the [DANDI Archive](https://dandiarchive.org/), again create and us
 ```bash
 conda create --name dandi_upload_created_7_17_2024 --no-default-packages
 conda activate dandi_upload_created_7_17_2024
-```
 
-and install latest version of the `dandi-cli`:
-
-```bash
-pip install dandi
+pip install leifer_lab_to_nwb[dandi]
 ```
 
 This, in particular, will have to be updated periodically to keep the version requirements within ranges expected by their server (the recommendation being to create a new environment each time; you can cleanup older or unused environments using `conda env remove --name < name of old environment to remove >`).

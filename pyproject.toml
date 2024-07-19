@@ -35,9 +35,24 @@ dependencies = [
     "neuroconv"
 ]
 
+[project.optional-dependencies]
+randi_nature_2023 = [
+    "wormdatamodel @ git+https://github.com/catalystneuro/wormdatamodel.git@fix_setup",
+    "ndx-subjects==0.2.0",
+    "ndx-patterned-ogen==0.1.0",
+    "ndx-microscopy @ git+https://github.com/catalystneuro/ndx-microscopy.git@add_roi_response_series"
+]
+
+dandi = [
+    "dandi",
+    "nwbinspector @ git+https://github.com/neurodatawithoutborders/nwbinspector.git@ndx_subjects"
+]
+
 [project.urls]
 "Homepage" = "https://github.com/catalystneuro/leifer-lab-to-nwb"
 "Bug Tracker" = "https://github.com/catalystneuro/leifer-lab-to-nwb/issues"
+
+
 
 [tool.black]
 line-length = 120
@@ -59,6 +74,8 @@ extend-exclude = '''
   | dist
 )/
 '''
+
+
 
 [tool.ruff]
 exclude = [

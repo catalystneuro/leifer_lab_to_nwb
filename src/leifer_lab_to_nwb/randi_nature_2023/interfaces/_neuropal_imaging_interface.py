@@ -112,20 +112,30 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         chunk_shape = (1, 1, self.data_shape[-2], self.data_shape[-1])
 
         # Best we can do is limit the number of depths that are written by stub
-        # TODO: add ndx-micorscopy support to NeuroConv BackendConfiguration to avoid need for H5DataIO
         imaging_data = self.data if not stub_test else self.data[:stub_depths, :, :, :]
         data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(data=imaging_data, chunk_shape=chunk_shape)
         data_iterator = pynwb.H5DataIO(data_iterator, compression="gzip")
 
         depth_per_frame_in_um = self.brains_info["zOfFrame"][0]
 
+        light_sources_used_by_volume = pynwb.base.VectorData(
+            name="light_sources", description="Light sources used by this MultiChannelVolume.", data=light_sources
+        )
+        optical_channels_used_by_volume = pynwb.base.VectorData(
+            name="optical_channels",
+            description=(
+                "Optical channels ordered to correspond to the third axis (e.g., [0, 0, :, 0]) "
+                "of the data for this MultiChannelVolume."
+            ),
+            data=optical_channels,
+        )
         multi_channel_microscopy_volume = ndx_microscopy.VariableDepthMultiChannelMicroscopyVolume(
             name="NeuroPALImaging",
             description="",
             microscope=microscope,
-            light_sources=light_sources[0],  # TODO
             imaging_space=imaging_space,
-            optical_channels=optical_channels[0],  # TODO
+            light_sources=light_sources_used_by_volume,
+            optical_channels=optical_channels_used_by_volume,
             data=data_iterator,
             depth_per_frame_in_um=depth_per_frame_in_um,
             unit="n.a.",

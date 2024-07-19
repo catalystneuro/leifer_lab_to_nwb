@@ -122,7 +122,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
 
         # TODO: might prefer to combine plane segmentations over image segmentation objects
         # to reduce clutter
-        image_segmentation = ndx_microscopy.MicroscopyImageSegmentation(
+        image_segmentation = ndx_microscopy.MicroscopySegmentations(
             name=f"PumpProbe{self.channel_name}ImageSegmentation", microscopy_plane_segmentations=[plane_segmentation]
         )
 
