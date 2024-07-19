@@ -102,7 +102,21 @@ pip install .[dandi]
 
 This, in particular, will have to be updated periodically to keep the version requirements within ranges expected by their server (the recommendation being to create a new environment each time; you can cleanup older or unused environments using `conda env remove --name < name of old environment to remove >`).
 
-First, navigate to the directory containing the NWB output folder specified above. If you have not already downloaded a local partial copy of the dandiset you wish to upload to, then start by calling:
+First, fetch your DANDI API credential from the top-right corner of the [archive website](https://dandiarchive.org/) (your initials) and set them as an environment variable.
+
+On Windows, you can either set it once in the command line using:
+
+```bash
+set DANDI_API_KEY=< paste API key here >
+```
+
+or you can save it permanently on the device via the control panel. On UNIX, the command is:
+
+```bash
+export DANDI_API_KEY=< paste API key here >
+```
+
+Then, navigate to the directory containing the NWB output folder specified during the file conversion. If you have not already downloaded a local partial copy of the dandiset you wish to upload to, then start by calling:
 
 ```bash
 dandi download DANDI:< dandiset ID >  --download dandiset.yaml
