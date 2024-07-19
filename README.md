@@ -27,7 +27,7 @@ conda activate <name of environment>
 You may also need to install `git` and `pip` using:
 
 ```bash
-conda install git pip
+conda install git pip --yes
 ```
 
 
@@ -37,8 +37,12 @@ conda install git pip
 In the isolated environment, install this package by calling:
 
 ```bash
-git clone https://github.com/catalystneuro/leifer-lab-to-nwb
-cd leifer-lab-to-nwb
+git clone https://github.com/catalystneuro/leifer_lab_to_nwb
+```
+
+then navigate into the `leifer_lab_to_nwb` directory and call:
+
+```bash
 pip install .
 ```
 
@@ -52,7 +56,17 @@ pip install .[randi_nature_2023]
 
 ## Usage: convert a single session of your experiment
 
-TODO
+To use the command line interface, simply copy and paste the following, then adjust to your local paths, subject ID:
+
+```bash
+pump_probe_to_nwb --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/nwbfiles
+```
+
+This will write the full NWB file, but if you just want to do a quick test you can add the `--testing` flag to the end. I recommend doing this, but keeping the resulting files in a separate 'throw-away' directory, such as:
+
+```bash
+pump_probe_to_nwb --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/testing --testing
+```
 
 
 
@@ -67,7 +81,7 @@ conda create --name dandi_upload_created_7_17_2024 --no-default-packages
 conda activate dandi_upload_created_7_17_2024
 ```
 ```bash
-pip install leifer_lab_to_nwb[dandi]
+pip install .[dandi]
 ```
 
 This, in particular, will have to be updated periodically to keep the version requirements within ranges expected by their server (the recommendation being to create a new environment each time; you can cleanup older or unused environments using `conda env remove --name < name of old environment to remove >`).
