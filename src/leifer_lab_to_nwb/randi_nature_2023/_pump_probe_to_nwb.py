@@ -1,9 +1,4 @@
-"""
-Main conversion script for a single session of data for the Randi et al. Nature 2023 paper.
-
-This can either be run directly in conjunction with the global (capitalized) variables defined towards the top of the
-file, or can be invoked via the command line interface.
-"""
+"""Main code definition for the conversion of a full session (including NeuroPAL)."""
 
 import datetime
 import pathlib
@@ -15,31 +10,14 @@ from pydantic import FilePath, DirectoryPath
 
 from ._randi_nature_2023_converter import RandiNature2023Converter
 
-# STUB_TEST=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
-STUB_TEST = True
-
-# STUB_TEST=False performs a full file conversion
-# STUB_TEST = False
-
-
-# Define base folder of source data
-# Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
-SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
-
-# The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry
-# For testing, subject ID '26' matches date '20211104' used in Figure 1 of the paper
-SUBJECT_ID = 26
-
-NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
-
-# *************************************************************************
-# Everything below this line is automated and should not need to be changed
-# *************************************************************************
-
 
 def pump_probe_to_nwb(
-    *, subject_info_file_path: FilePath, subject_id: int, nwb_output_folder_path: DirectoryPath
+    *,
+    base_folder_path: DirectoryPath,
+    subject_info_file_path: FilePath,
+    subject_id: int,
+    nwb_output_folder_path: DirectoryPath,
+    testing: bool = False,
 ) -> None:
     """
     Convert a single session of pumpprobe (and its corresponding NeuroPAL) data to NWB format.
@@ -48,29 +26,47 @@ def pump_probe_to_nwb(
 
     Parameters
     ----------
-    subject_info_file_path : str | pathlib.Path
+    base_folder_path : pydantic.DirectoryPath
+        The base folder in which to search for data referenced by the `subject_info_file_path`.
+
+        Expected to be structured similar to...
+
+        |- < base folder >
+        |--- < date >
+        |----- multicolorworm_< timestamp >
+        |----- pumpprobe_< timestamp >
+
+        For example...
+
+        |- D:/Leifer
+        |--- 20211104
+        |----- multicolorworm_20211104_162630
+        |----- pumpprobe_20211104_163944
+    subject_info_file_path : pydantic.FilePath
         The path to the subject log YAML file.
     subject_id : int
         ID of the subject in the YAML file - must be an integer, not a string.
-    nwb_output_folder_path : str | pathlib.Path
+    nwb_output_folder_path : pydantic.DirectoryPath
         The folder path to save the NWB files to.
+    testing : bool, default: False
+        Whether or not to 'test' the conversion process by limiting the amount of data written to the NWB file.
     """
     subject_info_file_path = pathlib.Path(subject_info_file_path)
     nwb_output_folder_path = pathlib.Path(nwb_output_folder_path)
 
-    with open(file=SUBJECT_INFO_FILE_PATH, mode="r") as stream:
+    with open(file=subject_info_file_path, mode="r") as stream:
         all_subject_info = yaml.load(stream=stream, Loader=yaml.SafeLoader)
 
-    this_subject_info = all_subject_info[SUBJECT_ID]
+    this_subject_info = all_subject_info[subject_id]
 
-    session_folder_path = BASE_FOLDER_PATH / str(this_subject_info["date"])
+    session_folder_path = base_folder_path / str(this_subject_info["date"])
     pump_probe_folder_path = session_folder_path / this_subject_info["pump_probe_folder"]
     multicolor_folder_path = session_folder_path / this_subject_info["multicolor_folder"]
 
     # Suppress false warning
     warnings.filterwarnings(action="ignore", message="The linked table for DynamicTableRegion*", category=UserWarning)
 
-    NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
+    nwb_output_folder_path.mkdir(exist_ok=True)
 
     # Parse session start time from the pumpprobe path
     session_string = pump_probe_folder_path.stem.removeprefix("pumpprobe_")
@@ -119,10 +115,10 @@ def pump_probe_to_nwb(
     metadata["NWBFile"]["keywords"] = ["C. elegans", "optogenetics", "functional connectivity"]
 
     assert (
-        this_subject_info["subject_id"] == SUBJECT_ID
+        this_subject_info["subject_id"] == subject_id
     ), "Mismatch in subject ID between key and info value! Please double check the subject metadata YAML file."
 
-    metadata["Subject"]["subject_id"] = str(SUBJECT_ID)
+    metadata["Subject"]["subject_id"] = str(subject_id)
 
     lab_sex_mapping = {"H": "XX", "M": "XO"}
     metadata["Subject"]["c_elegans_sex"] = lab_sex_mapping[this_subject_info["sex"]]
@@ -134,32 +130,24 @@ def pump_probe_to_nwb(
     metadata["Subject"]["cultivation_temp"] = 20.0
 
     conversion_options = {
-        "PumpProbeImagingInterfaceGreen": {"stub_test": STUB_TEST},
-        "PumpProbeImagingInterfaceRed": {"stub_test": STUB_TEST},
-        "PumpProbeSegmentationInterfaceGreed": {"stub_test": STUB_TEST},
-        "PumpProbeSegmentationInterfaceRed": {"stub_test": STUB_TEST},
-        "NeuroPALImagingInterface": {"stub_test": STUB_TEST},
+        "PumpProbeImagingInterfaceGreen": {"stub_test": testing},
+        "PumpProbeImagingInterfaceRed": {"stub_test": testing},
+        "PumpProbeSegmentationInterfaceGreed": {"stub_test": testing},
+        "PumpProbeSegmentationInterfaceRed": {"stub_test": testing},
+        "NeuroPALImagingInterface": {"stub_test": testing},
     }
 
-    if STUB_TEST:
-        stub_folder_path = NWB_OUTPUT_FOLDER_PATH.parent / "stub_nwbfiles"
+    if testing:
+        stub_folder_path = nwb_output_folder_path.parent / "stub_nwbfiles"
         stub_folder_path.mkdir(exist_ok=True)
         nwbfile_path = stub_folder_path / f"{session_string}_stub.nwb"
     else:
         # Name and nest the file in a DANDI compliant way
-        subject_folder_path = NWB_OUTPUT_FOLDER_PATH / f"sub-{SUBJECT_ID}"
+        subject_folder_path = nwb_output_folder_path / f"sub-{subject_id}"
         subject_folder_path.mkdir(exist_ok=True)
         dandi_session_string = session_string.replace("_", "-")
-        nwbfile_path = subject_folder_path / f"sub-{SUBJECT_ID}_ses-{dandi_session_string}.nwb"
+        nwbfile_path = subject_folder_path / f"sub-{subject_id}_ses-{dandi_session_string}.nwb"
 
     converter.run_conversion(
         nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True, conversion_options=conversion_options
-    )
-
-
-if __name__ == "__main__":
-    pump_probe_to_nwb(
-        subject_info_file_path=SUBJECT_INFO_FILE_PATH,
-        subject_id=SUBJECT_ID,
-        nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
     )
