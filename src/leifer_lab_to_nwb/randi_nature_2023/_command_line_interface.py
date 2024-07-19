@@ -3,7 +3,7 @@
 import pathlib
 
 import click
-from pydantic import FilePath, DirectoryPath
+import pydantic
 
 from .convert_session import pump_probe_to_nwb
 
@@ -51,18 +51,30 @@ For example...
 )
 @click.option(
     "--testing",
-    help="Whether or not to 'test' the conversion process by limiting the amount of data written to the NWB file.",
+    help="""
+Whether or not to 'test' the conversion process by limiting the amount of data written to the NWB file.
+
+Note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder adjacent to
+it marked as `nwb_testing`.
+""",
     required=True,
     is_flag=True,
 )
 def _pump_probe_to_nwb_cli(
-    *, subject_info_file_path: FilePath, subject_id: int, nwb_output_folder_path: DirectoryPath
+    *,
+    base_folder_path: pydantic.DirectoryPath,
+    subject_info_file_path: pydantic.FilePath,
+    subject_id: int,
+    nwb_output_folder_path: pydantic.DirectoryPath,
+    testing: bool = False,
 ) -> None:
     subject_info_file_path = pathlib.Path(subject_info_file_path)
     nwb_output_folder_path = pathlib.Path(nwb_output_folder_path)
 
     pump_probe_to_nwb(
+        base_folder_path=base_folder_path,
         subject_info_file_path=subject_info_file_path,
         subject_id=subject_id,
         nwb_output_folder_path=nwb_output_folder_path,
+        testing=testing,
     )

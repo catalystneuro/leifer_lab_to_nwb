@@ -50,6 +50,9 @@ def pump_probe_to_nwb(
         The folder path to save the NWB files to.
     testing : bool, default: False
         Whether or not to 'test' the conversion process by limiting the amount of data written to the NWB file.
+
+        Note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder
+        adjacent to it marked as `nwb_testing`.
     """
     subject_info_file_path = pathlib.Path(subject_info_file_path)
     nwb_output_folder_path = pathlib.Path(nwb_output_folder_path)
@@ -138,9 +141,9 @@ def pump_probe_to_nwb(
     }
 
     if testing:
-        stub_folder_path = nwb_output_folder_path.parent / "stub_nwbfiles"
-        stub_folder_path.mkdir(exist_ok=True)
-        nwbfile_path = stub_folder_path / f"{session_string}_stub.nwb"
+        testing_folder_path = nwb_output_folder_path.parent / "nwb_testing"
+        testing_folder_path.mkdir(exist_ok=True)
+        nwbfile_path = testing_folder_path / f"{session_string}_stub.nwb"
     else:
         # Name and nest the file in a DANDI compliant way
         subject_folder_path = nwb_output_folder_path / f"sub-{subject_id}"

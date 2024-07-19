@@ -56,6 +56,8 @@ pip install .[randi_nature_2023]
 
 ## Usage: convert a single session of your experiment
 
+### Command line interface
+
 To use the command line interface, simply copy and paste the following, then adjust to your local paths, subject ID:
 
 ```bash
@@ -65,8 +67,20 @@ pump_probe_to_nwb --base_folder_path D:/Leifer --subject_info_file_path D:/Leife
 This will write the full NWB file, but if you just want to do a quick test you can add the `--testing` flag to the end. I recommend doing this, but keeping the resulting files in a separate 'throw-away' directory, such as:
 
 ```bash
-pump_probe_to_nwb --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/testing --testing
+pump_probe_to_nwb --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/nwbfiles --testing
 ```
+
+though you should note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder adjacent to it marked as `nwb_testing`.
+
+If you ever have any question about how to use the command line interface, you can invoke:
+
+```bash
+pump_probe_to_nwb --help
+```
+
+to quickly reference the various options.
+
+### Python script
 
 Alternatively, you can also run the conversion directly via a Python script - just search for the [`convert_session.py`](https://github.com/catalystneuro/leifer_lab_to_nwb/blob/main/src/leifer_lab_to_nwb/randi_nature_2023/convert_session.py) file in your local copy of the repository, and follow instructions at the top of the file to adjust the parameters.
 
