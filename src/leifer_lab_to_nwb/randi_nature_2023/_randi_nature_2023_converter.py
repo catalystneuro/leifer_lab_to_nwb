@@ -1,6 +1,6 @@
 import copy
 
-import ndx_multichannel_volume
+import ndx_subjects
 import neuroconv
 import pynwb
 from pydantic import FilePath
@@ -50,7 +50,8 @@ class RandiNature2023Converter(neuroconv.NWBConverter):
 
         metadata_copy = dict(metadata)
         subject_metadata = metadata_copy.pop("Subject")  # Must remove from base metadata
-        subject = ndx_multichannel_volume.CElegansSubject(**subject_metadata)
+        subject_metadata.update(sex="O", species="Caenorhabditis elegans")
+        subject = ndx_subjects.CElegansSubject(**subject_metadata)
 
         conversion_options = conversion_options or dict()
         self.validate_conversion_options(conversion_options=conversion_options)

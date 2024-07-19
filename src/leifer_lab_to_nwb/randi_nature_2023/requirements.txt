@@ -1,6 +1,4 @@
-neuroconv==0.4.8  # TODO, when propagated, add [ophys_binary]
-roiextractors==0.5.6
-ndx-patterned-ogen @ git+https://github.com/catalystneuro/ndx-patterned-ogen.git@1880684f33c220c502283dba88a458739df9174e
-ndx-multichannel-volume==0.1.12
-scikit-image==0.23.2  # Required to import ndx-multichannel-volume
-ndx_microscopy @ git+https://github.com/catalystneuro/ndx-microscopy.git
+wormdatamodel @ git+https://github.com/catalystneuro/wormdatamodel.git@fix_setup
+ndx-subjects==0.2.0
+ndx-patterned-ogen==0.1.0
+ndx-microscopy @ git+https://github.com/catalystneuro/ndx-microscopy.git@add_roi_response_series

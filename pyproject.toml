@@ -39,6 +39,8 @@ dependencies = [
 "Homepage" = "https://github.com/catalystneuro/leifer-lab-to-nwb"
 "Bug Tracker" = "https://github.com/catalystneuro/leifer-lab-to-nwb/issues"
 
+
+
 [tool.black]
 line-length = 120
 target-version = ["py312"]
@@ -59,6 +61,8 @@ extend-exclude = '''
   | dist
 )/
 '''
+
+
 
 [tool.ruff]
 exclude = [
