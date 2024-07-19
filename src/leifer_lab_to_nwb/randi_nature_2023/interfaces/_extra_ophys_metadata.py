@@ -8,22 +8,22 @@ import pynwb
 
 class ExtraOphysMetadataInterface(neuroconv.BaseDataInterface):
 
-    def __init__(self, *, pumpprobe_folder_path: str | pathlib.Path) -> None:
+    def __init__(self, *, pump_probe_folder_path: str | pathlib.Path) -> None:
         """
         A custom interface for adding extra table metadata for the ophys rig.
 
         Parameters
         ----------
-        pumpprobe_folder_path : DirectoryPath
+        pump_probe_folder_path : DirectoryPath
             Path to the raw pumpprobe folder.
         """
-        pumpprobe_folder_path = pathlib.Path(pumpprobe_folder_path)
+        pump_probe_folder_path = pathlib.Path(pump_probe_folder_path)
 
-        z_scan_file_path = pumpprobe_folder_path / "zScan.json"
+        z_scan_file_path = pump_probe_folder_path / "zScan.json"
         with open(file=z_scan_file_path, mode="r") as fp:
             self.z_scan = json.load(fp=fp)
 
-        sync_table_file_path = pumpprobe_folder_path / "other-frameSynchronous.txt"
+        sync_table_file_path = pump_probe_folder_path / "other-frameSynchronous.txt"
         self.sync_table = pandas.read_table(filepath_or_buffer=sync_table_file_path, index_col=False)
 
     def add_to_nwbfile(self, nwbfile: pynwb.NWBFile, metadata: dict):

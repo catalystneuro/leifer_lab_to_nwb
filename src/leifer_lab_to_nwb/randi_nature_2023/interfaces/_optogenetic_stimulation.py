@@ -10,23 +10,23 @@ import pynwb
 
 class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
 
-    def __init__(self, *, pumpprobe_folder_path: str | pathlib.Path):
+    def __init__(self, *, pump_probe_folder_path: str | pathlib.Path):
         """
         A custom interface for the two photon optogenetic stimulation data.
 
         Parameters
         ----------
-        pumpprobe_folder_path : DirectoryPath
+        pump_probe_folder_path : DirectoryPath
             Path to the raw pumpprobe folder.
         """
-        pumpprobe_folder_path = pathlib.Path(pumpprobe_folder_path)
+        pump_probe_folder_path = pathlib.Path(pump_probe_folder_path)
 
-        optogenetic_stimulus_file_path = pumpprobe_folder_path / "pharosTriggers.txt"
+        optogenetic_stimulus_file_path = pump_probe_folder_path / "pharosTriggers.txt"
         self.optogenetic_stimulus_table = pandas.read_table(
             filepath_or_buffer=optogenetic_stimulus_file_path, index_col=False
         )
 
-        timestamps_file_path = pumpprobe_folder_path / "framesDetails.txt"
+        timestamps_file_path = pump_probe_folder_path / "framesDetails.txt"
         self.timestamps_table = pandas.read_table(filepath_or_buffer=timestamps_file_path, index_col=False)
         self.timestamps = numpy.array(self.timestamps_table["Timestamp"])
 

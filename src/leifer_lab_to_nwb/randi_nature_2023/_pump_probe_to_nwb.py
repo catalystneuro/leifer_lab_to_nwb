@@ -54,6 +54,7 @@ def pump_probe_to_nwb(
         Note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder
         adjacent to it marked as `nwb_testing`.
     """
+    base_folder_path = pathlib.Path(base_folder_path)
     subject_info_file_path = pathlib.Path(subject_info_file_path)
     nwb_output_folder_path = pathlib.Path(nwb_output_folder_path)
 

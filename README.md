@@ -67,7 +67,7 @@ pump_probe_to_nwb --base_folder_path D:/Leifer --subject_info_file_path D:/Leife
 This will write the full NWB file, but if you just want to do a quick test you can add the `--testing` flag to the end. I recommend doing this, but keeping the resulting files in a separate 'throw-away' directory, such as:
 
 ```bash
-pump_probe_to_nwb --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/nwbfiles --testing
+pump_probe_to_nwb --base_folder_path D:/Leifer --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/nwbfiles --testing
 ```
 
 though you should note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder adjacent to it marked as `nwb_testing`.
