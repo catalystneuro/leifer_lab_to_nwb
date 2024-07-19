@@ -29,8 +29,20 @@ jobs:
           python -m pip install -U pip  # Official recommended way
           pip install pytest-xdist
 
-      - name: Install package in editable mode
-        run: pip install -e .
+      - name: Install minimal package
+        run: pip install .
 
       - name: Test import
         run: python -c "import leifer_lab_to_nwb"
+
+      - name: Install extra dependencies
+        run: pip install .[randi_nature_2023]
+
+      - name: Test deeper import
+        run: python -c "import leifer_lab_to_nwb.randi_nature_2023"
+
+      - name: Install DANDI dependencies
+        run: pip install .[dandi]
+
+      - name: Test deeper import again
+        run: python -c "import leifer_lab_to_nwb.randi_nature_2023"
