@@ -57,8 +57,9 @@ Whether or not to 'test' the conversion process by limiting the amount of data w
 Note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder adjacent to
 it marked as `nwb_testing`.
 """,
-    required=True,
-    is_flag=True,
+    is_flag=True,  # This overrides the dtype to be boolean
+    required=False,
+    default=False,
 )
 def _pump_probe_to_nwb_cli(
     *,
