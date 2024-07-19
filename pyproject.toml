@@ -32,7 +32,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "neuroconv"
+    "neuroconv",
+    "click"
 ]
 
 [project.optional-dependencies]
@@ -47,6 +48,9 @@ dandi = [
     "dandi",
     "nwbinspector @ git+https://github.com/neurodatawithoutborders/nwbinspector.git@ndx_subjects"
 ]
+
+[project.scripts]
+pump_probe_to_nwb = "leifer_lab_to_nwb.randi_nature_2023._command_line_interface:_pump_probe_to_nwb_cli"
 
 [project.urls]
 "Homepage" = "https://github.com/catalystneuro/leifer-lab-to-nwb"
