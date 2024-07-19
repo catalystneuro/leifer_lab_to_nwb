@@ -62,8 +62,11 @@ To upload to the [DANDI Archive](https://dandiarchive.org/), again create and us
 
 ```bash
 conda create --name dandi_upload_created_7_17_2024 --no-default-packages
+```
+```bash
 conda activate dandi_upload_created_7_17_2024
-
+```
+```bash
 pip install leifer_lab_to_nwb[dandi]
 ```
 
