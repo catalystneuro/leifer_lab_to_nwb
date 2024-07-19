@@ -34,3 +34,6 @@ jobs:
 
       - name: Test import
         run: python -c "import leifer_lab_to_nwb"
+
+      - name: Test deeper import
+        run: python -c "import leifer_lab_to_nwb.randi_nature_2023"
