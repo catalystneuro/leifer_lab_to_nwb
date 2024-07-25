@@ -10,31 +10,51 @@ Includes the publication Neural signal propagation atlas of Caenorhabditis elega
 
 For maximum reliability and stability, it is recommended to use this software in its own conda environment to avoid conflicts with other packages installed on the same system.
 
-Begin by installing [Anaconda](https://www.anaconda.com/download#), then create a new environment by running:
+Begin by installing [Anaconda](https://www.anaconda.com/download#), then create a new environment.
+
+Be sure to install this environment in a location that has enough disk space by using the `--prefix` flag:
 
 ```bash
-conda create --name <name of environment> --no-default-packages
+conda create --prefix < folder path >/leifer_lab_to_nwb_< today's date > --no-default-packages --yes
 ```
 
-where you may choose whatever convention you prefer for setting environment names. I like to tag the name with the date of creation for easy reference, such as `leifer_lab_to_nwb_created_7_17_2024`.
-
-You can then activate the isolated environment with:
+where the `folder path` is a mounted drive with ample space instead of your user's home directory. For example:
 
 ```bash
-conda activate <name of environment>
+conda create --prefix /mnt/data/leifer_lab_to_nwb_7_25_2024 --no-default-packages --yes
 ```
 
-You may also need to install `git` and `pip` using:
+I recommend tagging the name of the environment with the date reference to make it easier to tell if the environment might be out of date. I recommend creating a new fresh environment every few months.
+
+You can then confirm the environment was installed by calling:
 
 ```bash
-conda install git pip --yes
+conda env list
+```
+
+from which you should be able to see the environment that was just created. You can then activate this isolated environment with:
+
+```bash
+conda activate < folder path >/leifer_lab_to_nwb_< date reference >
+```
+
+For example:
+
+```bash
+conda activate /mnt/data/leifer_lab_to_nwb_7_25_2024
 ```
 
 
 
 ## Installation
 
-In the isolated environment, install this package by calling:
+The first time you activate the isolated environment, begin by installing:
+
+```bash
+conda install git pip --yes
+```
+
+then install the rest of the package by calling:
 
 ```bash
 git clone https://github.com/catalystneuro/leifer_lab_to_nwb
@@ -56,29 +76,40 @@ pip install .[randi_nature_2023]
 
 ## Usage: convert a single session of your experiment
 
-### Command line interface
+### Command Line Interface (CLI)
 
-To use the command line interface, simply copy and paste the following, then adjust to your local paths, subject ID:
-
-```bash
-pump_probe_to_nwb --base_folder_path D:/Leifer --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/nwbfiles
-```
-
-This will write the full NWB file, but if you just want to do a quick test you can add the `--testing` flag to the end. I recommend doing this, but keeping the resulting files in a separate 'throw-away' directory, such as:
-
-```bash
-pump_probe_to_nwb --base_folder_path D:/Leifer --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml --subject_id 26 --nwb_output_folder_path D:/Leifer/nwbfiles --testing
-```
-
-though you should note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder adjacent to it marked as `nwb_testing`.
-
-If you ever have any question about how to use the command line interface, you can invoke:
+If you ever have any questions about how to use the CLI, you can invoke:
 
 ```bash
 pump_probe_to_nwb --help
 ```
 
 to quickly reference the various options.
+
+The main way of calling the CLI is to simply copy and paste the following, then adjust to your local paths and subject ID:
+
+```bash
+pump_probe_to_nwb \
+  --base_folder_path D:/Leifer \
+  --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml \
+  --subject_id 26 \
+  --nwb_output_folder_path D:/Leifer/nwbfiles \
+  --testing
+```
+
+Note that the `--testing` flag on the end there only writes a small NWB file to 'test' that the pipeline is working correctly.
+
+To perform the full data conversion, simply remove the `--testing` flag:
+
+```bash
+pump_probe_to_nwb \
+  --base_folder_path D:/Leifer \
+  --subject_info_file_path D:/Leifer/all_subjects_metadata.yaml \
+  --subject_id 26 \
+  --nwb_output_folder_path D:/Leifer/nwbfiles
+```
+
+
 
 ### Python script
 
