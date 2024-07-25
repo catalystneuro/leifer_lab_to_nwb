@@ -58,6 +58,7 @@ then install the rest of the package by calling:
 
 ```bash
 git clone https://github.com/catalystneuro/leifer_lab_to_nwb
+cd leifer_lab_to_nwb
 ```
 
 then navigate into the `leifer_lab_to_nwb` directory and call:
