@@ -1,6 +1,4 @@
-neuroconv==0.4.8  # TODO, when propagated, add [ophys_binary]
+neuroconv==0.4.8
 roiextractors==0.5.6
 ndx-patterned-ogen @ git+https://github.com/catalystneuro/ndx-patterned-ogen.git@1880684f33c220c502283dba88a458739df9174e
-ndx-multichannel-volume==0.1.12
-scikit-image==0.23.2  # Required to import ndx-multichannel-volume
-ndx_microscopy @ git+https://github.com/catalystneuro/ndx-microscopy.git
+ndx_microscopy @ git+https://github.com/catalystneuro/ndx-microscopy.git@6f5ceae572394e84d6da3170b757a14b069ab30e

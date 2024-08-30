@@ -12,7 +12,8 @@ from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 
 # STUB_TEST=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
 # STUB_TEST=False performs a full file conversion
-STUB_TEST = False
+STUB_TEST = True
+# STUB_TEST = False
 
 
 # Define base folder of source data

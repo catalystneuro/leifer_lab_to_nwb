@@ -91,8 +91,8 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
                 labels_comments=self.brains_info["labels_comments"][0][neuropal_roi_id],
             )
 
-        image_segmentation = ndx_microscopy.MicroscopyImageSegmentation(
-            name="NeuroPALImageSegmentation", microscopy_plane_segmentations=[plane_segmentation]
+        image_segmentation = ndx_microscopy.MicroscopySegmentations(
+            name="NeuroPALSegmentations", microscopy_plane_segmentations=[plane_segmentation]
         )
 
         ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")

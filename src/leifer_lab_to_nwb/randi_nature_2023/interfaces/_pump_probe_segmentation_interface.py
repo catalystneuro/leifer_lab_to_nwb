@@ -124,8 +124,8 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
 
         # TODO: might prefer to combine plane segmentations over image segmentation objects
         # to reduce clutter
-        image_segmentation = ndx_microscopy.MicroscopyImageSegmentation(
-            name=f"PumpProbe{self.channel_name}ImageSegmentation", microscopy_plane_segmentations=[plane_segmentation]
+        image_segmentation = ndx_microscopy.MicroscopySegmentations(
+            name=f"PumpProbe{self.channel_name}Segmentations", microscopy_plane_segmentations=[plane_segmentation]
         )
 
         ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")
