@@ -1,5 +1,4 @@
 import pathlib
-import shutil
 from typing import Literal
 
 import ndx_microscopy
@@ -9,10 +8,7 @@ import pandas
 import pydantic
 import pynwb
 
-_DEFAULT_CHANNEL_FRAME_SLICING = {
-    "Green": (slice(0, 512), slice(0, 512)),
-    "Red": (slice(512, 1024), slice(0, 512)),
-}
+from ._globals import _DEFAULT_CHANNEL_FRAME_SLICING, _DEFAULT_CHANNEL_NAMES
 
 
 class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
@@ -24,8 +20,8 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
     def __init__(
         self,
         *,
-        pumpprobe_folder_path: pydantic.DirectoryPath,
-        channel_name: Literal[["Green", "Red"]] | str,
+        pump_probe_folder_path: pydantic.DirectoryPath,
+        channel_name: Literal[_DEFAULT_CHANNEL_NAMES] | str,
         channel_frame_slicing: tuple[slice, slice] | None = None,
     ) -> None:
         """
@@ -33,7 +29,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         Parameters
         ----------
-        pumpprobe_folder_path : directory
+        pump_probe_folder_path : directory
             Path to the pumpprobe folder.
         channel_name : either of "GreenChannel", "RedChannel" or an arbitrary string
             The name given to the optical channel responsible for collecting this data.
@@ -48,11 +44,11 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
                 RedChannel=(slice(512, 1024), slice(0, 512))
         """
         super().__init__(
-            pumpprobe_folder_path=pumpprobe_folder_path,
+            pump_probe_folder_path=pump_probe_folder_path,
             channel_name=channel_name,
             channel_frame_slicing=channel_frame_slicing,
         )
-        if channel_name not in ["Green", "Red"] and channel_frame_slicing is None:
+        if channel_name not in _DEFAULT_CHANNEL_NAMES and channel_frame_slicing is None:
             raise ValueError(
                 f"A custom `optical_channel_name` was specified ('{channel_name}') and was not one of the "
                 f"known defaults ('{_DEFAULT_CHANNEL_NAMES}'), but no frame slicing pattern was passed."
@@ -61,19 +57,19 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         self.channel_name = channel_name
         self.channel_frame_slicing = channel_frame_slicing or _DEFAULT_CHANNEL_FRAME_SLICING[channel_name]
 
-        pumpprobe_folder_path = pathlib.Path(pumpprobe_folder_path)
+        pump_probe_folder_path = pathlib.Path(pump_probe_folder_path)
 
         # If the device setup is ever changed, these may need to be exposed as keyword arguments
         dtype = numpy.dtype("uint16")
         frame_shape = (1024, 512)
 
         # From prototyping data, the frameSync seems to start first...
-        sync_table_file_path = pumpprobe_folder_path / "other-frameSynchronous.txt"
+        sync_table_file_path = pump_probe_folder_path / "other-frameSynchronous.txt"
         sync_table = pandas.read_table(filepath_or_buffer=sync_table_file_path, index_col=False)
         frame_indices = sync_table["Frame index"]
 
         # ...then the frameDetails has timestamps for a subset of the frame indices
-        timestamps_file_path = pumpprobe_folder_path / "framesDetails.txt"
+        timestamps_file_path = pump_probe_folder_path / "framesDetails.txt"
         timestamps_table = pandas.read_table(filepath_or_buffer=timestamps_file_path, index_col=False)
         number_of_frames = timestamps_table.shape[0]
 
@@ -93,7 +89,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         full_shape = (number_of_frames, frame_shape[0], frame_shape[1])
 
-        dat_file_path = pumpprobe_folder_path / "sCMOS_Frames_U16_1024x512.dat"
+        dat_file_path = pump_probe_folder_path / "sCMOS_Frames_U16_1024x512.dat"
         self.imaging_data_memory_map = numpy.memmap(filename=dat_file_path, dtype=dtype, mode="r", shape=full_shape)
 
         # This slicing operation *should* be lazy since it does not usually include fancy indexing
@@ -153,12 +149,17 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         chunk_size_bytes = 10.0 * 1e6  # 10 MB default
         num_frames_per_chunk = int(chunk_size_bytes / frame_size_bytes)
         chunk_shape = (max(min(num_frames_per_chunk, num_frames), 1), x, y)
+        buffer_shape = (min(chunk_shape[0] * 100, num_frames), x, y)  # 1 GB by default
 
-        imaging_data = self.imaging_data_for_channel if not stub_test else self.imaging_data_for_channel[:stub_frames]
-        data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(
-            data=imaging_data, chunk_shape=chunk_shape, display_progress=display_progress
+        imaging_data = (
+            self.imaging_data_for_channel if not stub_test else self.imaging_data_for_channel[:stub_frames, ...]
         )
-        data_iterator = pynwb.H5DataIO(data_iterator, compression="gzip")
+        data_iterator = pynwb.H5DataIO(
+            neuroconv.tools.hdmf.SliceableDataChunkIterator(
+                data=imaging_data, chunk_shape=chunk_shape, buffer_shape=buffer_shape, display_progress=display_progress
+            ),
+            compression="gzip",
+        )
 
         timestamps = self.timestamps if not stub_test else self.timestamps[:stub_frames]
 

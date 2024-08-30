@@ -2,14 +2,8 @@
 Main conversion script for a single session of processed data (no raw imaging) for the Randi et al. Nature 2023 paper.
 """
 
-import datetime
 import pathlib
-import warnings
 
-import dateutil.tz
-import ndx_subjects
-import pandas
-import pynwb
 
 from leifer_lab_to_nwb.randi_nature_2023 import convert_session
 
@@ -23,7 +17,7 @@ STUB_TEST = False
 SOURCE_FOLDER_PATH = pathlib.Path("D:/Leifer")
 SESSION_FOLDER_PATH = SOURCE_FOLDER_PATH / "20211104"
 
-PUMPPROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
+PUMP_PROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
 MULTICOLOR_FOLDER_PATH = SESSION_FOLDER_PATH / "multicolorworm_20211104_162630"
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
@@ -36,7 +30,7 @@ NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
 NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
 
 convert_session(
-    pumpprobe_folder_path=PUMPPROBE_FOLDER_PATH,
+    pump_probe_folder_path=PUMP_PROBE_FOLDER_PATH,
     multicolor_folder_path=MULTICOLOR_FOLDER_PATH,
     nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
     raw_or_processed="processed",

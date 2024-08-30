@@ -11,7 +11,7 @@ from ._randi_nature_2023_converter import RandiNature2023Converter
 @pydantic.validate_call
 def convert_session(
     *,
-    pumpprobe_folder_path: pydantic.DirectoryPath,
+    pump_probe_folder_path: pydantic.DirectoryPath,
     multicolor_folder_path: pydantic.DirectoryPath,
     nwb_output_folder_path: pydantic.DirectoryPath,
     raw_or_processed: typing.Literal["raw", "processed"],
@@ -22,7 +22,7 @@ def convert_session(
     subject_info = subject_info or dict()
 
     # Parse session start time from the pumpprobe path
-    session_string = pumpprobe_folder_path.stem.removeprefix("pumpprobe_")
+    session_string = pump_probe_folder_path.stem.removeprefix("pumpprobe_")
     session_start_time = datetime.datetime.strptime(session_string, "%Y%m%d_%H%M%S")
     session_start_time = session_start_time.replace(tzinfo=dateutil.tz.gettz("US/Eastern"))
 
@@ -48,8 +48,11 @@ def convert_session(
 
     if raw_or_processed == "raw":
         source_data = {
-            "PumpProbeImagingInterfaceGreen": {"pumpprobe_folder_path": pumpprobe_folder_path, "channel_name": "Green"},
-            "PumpProbeImagingInterfaceRed": {"pumpprobe_folder_path": pumpprobe_folder_path, "channel_name": "Red"},
+            "PumpProbeImagingInterfaceGreen": {
+                "pump_probe_folder_path": pump_probe_folder_path,
+                "channel_name": "Green",
+            },
+            "PumpProbeImagingInterfaceRed": {"pump_probe_folder_path": pump_probe_folder_path, "channel_name": "Red"},
             "NeuroPALImagingInterface": {"multicolor_folder_path": multicolor_folder_path},
         }
         conversion_options = {
@@ -60,15 +63,15 @@ def convert_session(
     elif raw_or_processed == "processed":
         source_data = {
             "PumpProbeSegmentationInterfaceGreed": {
-                "pumpprobe_folder_path": pumpprobe_folder_path,
+                "pump_probe_folder_path": pump_probe_folder_path,
                 "channel_name": "Green",
             },
             "PumpProbeSegmentationInterfaceRed": {
-                "pumpprobe_folder_path": pumpprobe_folder_path,
+                "pump_probe_folder_path": pump_probe_folder_path,
                 "channel_name": "Red",
             },
             "NeuroPALSegmentationInterface": {"multicolor_folder_path": multicolor_folder_path},
-            "OptogeneticStimulationInterface": {"pumpprobe_folder_path": pumpprobe_folder_path},
+            "OptogeneticStimulationInterface": {"pump_probe_folder_path": pump_probe_folder_path},
         }
         conversion_options = {
             "PumpProbeSegmentationInterfaceGreed": {"stub_test": stub_test},
@@ -104,7 +107,7 @@ def convert_session(
     if growth_stage_comments := subject_info.get("growth_stage_comments", "none") != "none":
         subject_description += f"Growth stage comments: {growth_stage_comments}\n"
     if other_comments := subject_info.get("other_comments", "none") != "none":
-        subject_description += f"Other comments: {growth_stage_comments}\n"
+        subject_description += f"Other comments: {other_comments}\n"
     if subject_description != "":
         metadata["Subject"]["description"] = subject_description
 

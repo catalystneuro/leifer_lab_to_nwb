@@ -10,27 +10,31 @@ import pandas
 import pydantic
 import pynwb
 
+from ._globals import _DEFAULT_CHANNEL_NAMES
+
 
 class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
 
-    def __init__(self, *, pumpprobe_folder_path: pydantic.DirectoryPath, channel_name: Literal["Green", "Red"] | str):
+    def __init__(
+        self, *, pump_probe_folder_path: pydantic.DirectoryPath, channel_name: Literal[_DEFAULT_CHANNEL_NAMES]
+    ):
         """
         A custom interface for the raw volumetric pumpprobe data.
 
         Parameters
         ----------
-        pumpprobe_folder_path : DirectoryPath
+        pump_probe_folder_path : DirectoryPath
             Path to the pumpprobe folder.
         """
-        super().__init__(pumpprobe_folder_path=pumpprobe_folder_path, channel_name=channel_name)
-        pumpprobe_folder_path = pathlib.Path(pumpprobe_folder_path)
+        super().__init__(pump_probe_folder_path=pump_probe_folder_path, channel_name=channel_name)
+        pump_probe_folder_path = pathlib.Path(pump_probe_folder_path)
 
         self.channel_name = channel_name
 
         # Other interfaces use CamelCase to refer to the NWB object the channel data will end up as
         # The files on the other hand are all lower case
         lower_channel_name = channel_name.lower()
-        signal_file_path = pumpprobe_folder_path / f"{lower_channel_name}.pickle"
+        signal_file_path = pump_probe_folder_path / f"{lower_channel_name}.pickle"
         with open(file=signal_file_path, mode="rb") as io:
             self.signal_info = pickle.load(file=io)
 
@@ -45,13 +49,13 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             "\n\nPlease raise an issue to have the new mask type incorporated."
         )
 
-        brains_file_path = pumpprobe_folder_path / "brains.json"
+        brains_file_path = pump_probe_folder_path / "brains.json"
         with open(brains_file_path, "r") as io:
             self.brains_info = json.load(fp=io)
 
         # Technically every frame at every depth has a timestamp (and these are in the source MicroscopySeries)
         # But the fluorescence is aggregated per volume (over time) and so the timestamps are averaged over those frames
-        timestamps_file_path = pumpprobe_folder_path / "framesDetails.txt"
+        timestamps_file_path = pump_probe_folder_path / "framesDetails.txt"
         timestamps_table = pandas.read_table(filepath_or_buffer=timestamps_file_path, index_col=False)
         timestamps = numpy.array(timestamps_table["Timestamp"])
 

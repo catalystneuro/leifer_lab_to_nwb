@@ -1,13 +1,7 @@
 """Main conversion script for the entire dataset for the Randi et al. Nature 2023 paper."""
 
-import datetime
 import pathlib
-import warnings
 
-import dateutil.tz
-import ndx_subjects
-import pandas
-import pynwb
 import tqdm
 import yaml
 
@@ -57,7 +51,7 @@ for subject_info in tqdm.tqdm(
     multicolor_folder_path = session_folder_path / subject_info["multicolor_folder"]
 
     convert_session(
-        pumpprobe_folder_path=pumpprobe_folder_path,
+        pump_probe_folder_path=pumpprobe_folder_path,
         multicolor_folder_path=multicolor_folder_path,
         nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
         raw_or_processed=raw_or_processed,
@@ -84,7 +78,7 @@ for subject_info in tqdm.tqdm(
     multicolor_folder_path = session_folder_path / subject_info["multicolor_folder"]
 
     convert_session(
-        pumpprobe_folder_path=pumpprobe_folder_path,
+        pump_probe_folder_path=pumpprobe_folder_path,
         multicolor_folder_path=multicolor_folder_path,
         nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
         raw_or_processed=raw_or_processed,

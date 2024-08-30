@@ -1,5 +1,4 @@
 import copy
-from typing import Union
 
 import ndx_subjects
 import neuroconv

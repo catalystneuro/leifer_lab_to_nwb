@@ -1,12 +1,9 @@
 import json
 import pathlib
-import shutil
-from typing import Literal
 
 import ndx_microscopy
 import neuroconv
 import numpy
-import pandas
 import pydantic
 import pynwb
 
@@ -137,6 +134,17 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         depth_per_frame_in_um = self.brains_info["zOfFrame"][0]
 
+        light_sources_used_by_volume = pynwb.base.VectorData(
+            name="light_sources", description="Light sources used by this MultiChannelVolume.", data=light_sources
+        )
+        optical_channels_used_by_volume = pynwb.base.VectorData(
+            name="optical_channels",
+            description=(
+                "Optical channels ordered to correspond to the third axis (e.g., [0, 0, :, 0]) "
+                "of the data for this MultiChannelVolume."
+            ),
+            data=optical_channels,
+        )
         multi_channel_microscopy_volume = ndx_microscopy.VariableDepthMultiChannelMicroscopyVolume(
             name="NeuroPALImaging",
             description="A static volume scan used for NeuroPAL registration.",

@@ -10,20 +10,11 @@ import datetime
 import pathlib
 import warnings
 
-import pandas
 import pynwb
 from dateutil import tz
 from pynwb.testing.mock.file import mock_NWBFile
 
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
-from leifer_lab_to_nwb.randi_nature_2023.interfaces import (
-    ExtraOphysMetadataInterface,
-    NeuroPALImagingInterface,
-    NeuroPALSegmentationInterface,
-    OptogeneticStimulationInterface,
-    PumpProbeImagingInterface,
-    PumpProbeSegmentationInterface,
-)
 
 # Define base folder of source data
 # Change these as needed on new systems
@@ -58,19 +49,19 @@ MULTICOLOR_FOLDER_PATH = str(MULTICOLOR_FOLDER_PATH)
 
 interfaces_classes_to_test = {
     "PumpProbeImagingInterfaceGreen": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
         "conversion_options": {"stub_test": True},
     },
     "PumpProbeImagingInterfaceRed": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
         "conversion_options": {"stub_test": True},
     },
     "PumpProbeSegmentationInterfaceGreed": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
         "conversion_options": {"stub_test": True},
     },
     "PumpProbeSegmentationInterfaceRed": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
         "conversion_options": {"stub_test": True},
     },
     "NeuroPALImagingInterface": {
@@ -81,10 +72,10 @@ interfaces_classes_to_test = {
         "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
     },
     "OptogeneticStimulationInterface": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH},
     },
     "ExtraOphysMetadataInterface": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH},
     },
 }
 

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -23,8 +23,7 @@ keywords = ["leifer", "C elegans", "NWB", "conversion", "open data", "microscopy
 
 classifiers = [
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: BSD License",
     "Intended Audience :: Developers",
     "Operating System :: Microsoft :: Windows",
@@ -33,16 +32,35 @@ classifiers = [
 ]
 
 dependencies = [
-    "neuroconv"
+    "neuroconv",
+    "click"
 ]
+
+[project.optional-dependencies]
+randi_nature_2023 = [
+    "wormdatamodel @ git+https://github.com/catalystneuro/wormdatamodel.git@fix_setup",
+    "ndx-subjects==0.2.0",
+    "ndx-patterned-ogen==0.1.0",
+    "ndx-microscopy @ git+https://github.com/catalystneuro/ndx-microscopy.git@add_roi_response_series"
+]
+
+dandi = [
+    "dandi",
+    "nwbinspector @ git+https://github.com/neurodatawithoutborders/nwbinspector.git@ndx_subjects"
+]
+
+[project.scripts]
+pump_probe_to_nwb = "leifer_lab_to_nwb.randi_nature_2023._command_line_interface:_pump_probe_to_nwb_cli"
 
 [project.urls]
 "Homepage" = "https://github.com/catalystneuro/leifer-lab-to-nwb"
 "Bug Tracker" = "https://github.com/catalystneuro/leifer-lab-to-nwb/issues"
 
+
+
 [tool.black]
 line-length = 120
-target-version = ["py310", "py311"]
+target-version = ["py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -61,7 +79,20 @@ extend-exclude = '''
 )/
 '''
 
-[tool.isort]
-profile = "black"
-reverse_relative = true
-known_first_party = ["leifer_lab_to_nwb"]
+
+
+[tool.ruff]
+exclude = [
+  "*/__init__.py"
+]
+
+[tool.ruff.lint.isort]
+relative-imports-order = "closest-to-furthest"
+known-first-party = ["leifer_lab_to_nwb"]
+
+
+
+[tool.codespell]
+skip = '.git*,*.pdf,*.css'
+check-hidden = true
+ignore-words-list = 'assertin'  # Should be able to remove on next codespell release
