@@ -88,8 +88,6 @@ metadata["Subject"]["cultivation_temp"] = 20.0
 conversion_options = {
     "PumpProbeImagingInterfaceGreen": {"stub_test": STUB_TEST},
     "PumpProbeImagingInterfaceRed": {"stub_test": STUB_TEST},
-    "PumpProbeSegmentationInterfaceGreed": {"stub_test": STUB_TEST},
-    "PumpProbeSegmentationInterfaceRed": {"stub_test": STUB_TEST},
     "NeuroPALImagingInterface": {"stub_test": STUB_TEST},
 }
 

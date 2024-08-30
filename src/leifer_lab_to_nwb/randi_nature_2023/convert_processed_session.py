@@ -6,9 +6,10 @@ import datetime
 import pathlib
 import warnings
 
+import dateutil.tz
+import ndx_subjects
 import pandas
 import pynwb
-from dateutil import tz
 
 from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 
@@ -20,14 +21,15 @@ STUB_TEST = False
 
 # Define base folder of source data
 # Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
-SESSION_FOLDER_PATH = BASE_FOLDER_PATH / "20211104"
+SOURCE_FOLDER_PATH = pathlib.Path("D:/Leifer")
+SESSION_FOLDER_PATH = SOURCE_FOLDER_PATH / "20211104"
 # LOGBOOK_FILE_PATH = SESSION_FOLDER_PATH / "logbook.txt"
 
 PUMPPROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
 MULTICOLOR_FOLDER_PATH = SESSION_FOLDER_PATH / "multicolorworm_20211104_162630"
 
-NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
+OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
+NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
 
 # *************************************************************************
 # Everything below this line is automated and should not need to be changed
@@ -41,7 +43,7 @@ NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
 # Parse session start time from the pumpprobe path
 session_string = PUMPPROBE_FOLDER_PATH.stem.removeprefix("pumpprobe_")
 session_start_time = datetime.datetime.strptime(session_string, "%Y%m%d_%H%M%S")
-session_start_time = session_start_time.replace(tzinfo=tz.gettz("US/Eastern"))
+session_start_time = session_start_time.replace(tzinfo=dateutil.tz.gettz("US/Eastern"))
 
 # TODO: might be able to remove these when NeuroConv supports better schema validation
 PUMPPROBE_FOLDER_PATH = str(PUMPPROBE_FOLDER_PATH)
@@ -80,20 +82,17 @@ metadata["NWBFile"]["keywords"] = ["C. elegans", "optogenetics", "functional con
 subject_id = session_start_time.strftime("%y%m%d")
 metadata["Subject"]["subject_id"] = subject_id
 metadata["Subject"]["species"] = "Caenorhabditis elegans"
+metadata["Subject"]["age"] = "P1D"
+metadata["Subject"]["sex"] = "O"
+metadata["Subject"]["c_elegans_sex"] = "XX"
 metadata["Subject"]["strain"] = "AKS471.2.d"
 metadata["Subject"]["genotype"] = "WT"
-metadata["Subject"]["sex"] = "XX"
-metadata["Subject"]["age"] = "P1D"
-# metadata["Subject"]["growth_stage_time"] = pandas.Timedelta(hours=2, minutes=30).isoformat()  # TODO: request
 metadata["Subject"]["growth_stage"] = "L4"
 metadata["Subject"]["cultivation_temp"] = 20.0
 
 conversion_options = {
-    "PumpProbeImagingInterfaceGreen": {"stub_test": STUB_TEST},
-    "PumpProbeImagingInterfaceRed": {"stub_test": STUB_TEST},
     "PumpProbeSegmentationInterfaceGreed": {"stub_test": STUB_TEST},
     "PumpProbeSegmentationInterfaceRed": {"stub_test": STUB_TEST},
-    "NeuroPALImagingInterface": {"stub_test": STUB_TEST},
 }
 
 if STUB_TEST:
