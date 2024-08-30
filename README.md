@@ -1,6 +1,6 @@
-# leifer-lab-to-nwb
+# leifer_lab_to_nwb
 
-Conversion scripts for the Leifer lab.Alternatively
+Conversion scripts for the Leifer lab.
 
 Includes the publication Neural signal propagation atlas of Caenorhabditis elegans (Nature, 2023).
 
