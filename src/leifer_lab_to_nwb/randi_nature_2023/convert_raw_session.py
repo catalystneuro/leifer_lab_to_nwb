@@ -3,34 +3,33 @@
 import pathlib
 
 
-from leifer_lab_to_nwb.randi_nature_2023 import convert_session
+from leifer_lab_to_nwb.randi_nature_2023 import pump_probe_to_nwb
 
-# STUB_TEST=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
-# STUB_TEST=False performs a full file conversion
-# STUB_TEST = True
-STUB_TEST = False
+# TESTING=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
+TESTING = True
+
+# TESTING=False performs a full file conversion
+# TESTING = False
+
 
 # Define base folder of source data
 # Change these as needed on new systems
 BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
-SESSION_FOLDER_PATH = BASE_FOLDER_PATH / "20211104"
+SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
 
-PUMP_PROBE_FOLDER_PATH = SESSION_FOLDER_PATH / "pumpprobe_20211104_163944"
-MULTICOLOR_FOLDER_PATH = SESSION_FOLDER_PATH / "multicolorworm_20211104_162630"
+# The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry
+# For testing, subject ID '26' matches date '20211104' used in Figure 1 of the paper
+SUBJECT_ID = 26
 
-OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
-NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
+NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
 
-# *************************************************************************
-# Everything below this line is automated and should not need to be changed
-# *************************************************************************
 
-NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
-
-convert_session(
-    pump_probe_folder_path=PUMP_PROBE_FOLDER_PATH,
-    multicolor_folder_path=MULTICOLOR_FOLDER_PATH,
-    nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
-    raw_or_processed="raw",
-    stub_test=STUB_TEST,
-)
+if __name__ == "__main__":
+    pump_probe_to_nwb(
+        base_folder_path=BASE_FOLDER_PATH,
+        subject_info_file_path=SUBJECT_INFO_FILE_PATH,
+        subject_id=SUBJECT_ID,
+        nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
+        raw_or_processed="raw",
+        testing=TESTING,
+    )

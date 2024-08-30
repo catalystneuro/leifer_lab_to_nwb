@@ -1,23 +1,26 @@
 """Main code definition for the conversion of a full session (including NeuroPAL)."""
 
 import datetime
-import pathlib
 import warnings
+import typing
 
 import yaml
-from dateutil import tz
-from pydantic import FilePath, DirectoryPath
+import dateutil.tz
+import pydantic
 
 from ._randi_nature_2023_converter import RandiNature2023Converter
 
 
+@pydantic.validate_call
 def pump_probe_to_nwb(
     *,
-    base_folder_path: DirectoryPath,
-    subject_info_file_path: FilePath,
+    base_folder_path: pydantic.DirectoryPath,
+    subject_info_file_path: pydantic.FilePath,
     subject_id: int,
-    nwb_output_folder_path: DirectoryPath,
+    nwb_output_folder_path: pydantic.DirectoryPath,
+    raw_or_processed: typing.Literal["raw", "processed"],
     testing: bool = False,
+    skip_existing: bool = True,
 ) -> None:
     """
     Convert a single session of pumpprobe (and its corresponding NeuroPAL) data to NWB format.
@@ -54,48 +57,72 @@ def pump_probe_to_nwb(
         Note that files produced in this way will not save in the `nwb_output_folder_path`, but rather in a folder
         adjacent to it marked as `nwb_testing`.
     """
-    base_folder_path = pathlib.Path(base_folder_path)
-    subject_info_file_path = pathlib.Path(subject_info_file_path)
-    nwb_output_folder_path = pathlib.Path(nwb_output_folder_path)
-
     with open(file=subject_info_file_path, mode="r") as stream:
-        all_subject_info = yaml.load(stream=stream, Loader=yaml.SafeLoader)
+        all_subject_info = yaml.safe_load(stream=stream)
+    subject_info = all_subject_info[subject_id]
 
-    this_subject_info = all_subject_info[subject_id]
-
-    session_folder_path = base_folder_path / str(this_subject_info["date"])
-    pump_probe_folder_path = session_folder_path / this_subject_info["pump_probe_folder"]
-    multicolor_folder_path = session_folder_path / this_subject_info["multicolor_folder"]
-
-    # Suppress false warning
-    warnings.filterwarnings(action="ignore", message="The linked table for DynamicTableRegion*", category=UserWarning)
-
-    nwb_output_folder_path.mkdir(exist_ok=True)
+    session_folder_path = base_folder_path / str(subject_info["date"])
+    pump_probe_folder_path = session_folder_path / subject_info["pump_probe_folder"]
+    multicolor_folder_path = session_folder_path / subject_info["multicolor_folder"]
 
     # Parse session start time from the pumpprobe path
     session_string = pump_probe_folder_path.stem.removeprefix("pumpprobe_")
     session_start_time = datetime.datetime.strptime(session_string, "%Y%m%d_%H%M%S")
-    session_start_time = session_start_time.replace(tzinfo=tz.gettz("US/Eastern"))
+    session_start_time = session_start_time.replace(tzinfo=dateutil.tz.gettz("US/Eastern"))
 
-    # TODO: might be able to remove these when NeuroConv supports better schema validation
-    pump_probe_folder_path = str(pump_probe_folder_path)
-    multicolor_folder_path = str(multicolor_folder_path)
+    subject_id_from_start_time = session_start_time.strftime("%y%m%d")
+    subject_id = str(subject_info.get("subject_id", subject_id_from_start_time))
 
-    source_data = {
-        "PumpProbeImagingInterfaceGreen": {"pump_probe_folder_path": pump_probe_folder_path, "channel_name": "Green"},
-        "PumpProbeImagingInterfaceRed": {"pump_probe_folder_path": pump_probe_folder_path, "channel_name": "Red"},
-        "PumpProbeSegmentationInterfaceGreed": {
-            "pump_probe_folder_path": pump_probe_folder_path,
-            "channel_name": "Green",
-        },
-        "PumpProbeSegmentationInterfaceRed": {"pump_probe_folder_path": pump_probe_folder_path, "channel_name": "Red"},
-        "NeuroPALImagingInterface": {"multicolor_folder_path": multicolor_folder_path},
-        "NeuroPALSegmentationInterface": {"multicolor_folder_path": multicolor_folder_path},
-        "OptogeneticStimulationInterface": {"pump_probe_folder_path": pump_probe_folder_path},
-        "ExtraOphysMetadataInterface": {"pump_probe_folder_path": pump_probe_folder_path},
-    }
+    session_type = "imaging" if raw_or_processed == "raw" else "segmentation"
+    if testing is True:
+        stub_folder_path = nwb_output_folder_path / "stubs"
+        stub_folder_path.mkdir(exist_ok=True)
+        nwbfile_path = stub_folder_path / f"{session_string}_stub_{session_type}.nwb"
+    else:
+        # Name and nest the file in a DANDI compliant way
+        subject_folder_path = nwb_output_folder_path / f"sub-{subject_id}"
+        subject_folder_path.mkdir(exist_ok=True)
+        dandi_session_string = session_string.replace("_", "-")
+        dandi_filename = f"sub-{subject_id}_ses-{dandi_session_string}_desc-{session_type}_ophys+ogen.nwb"
+        nwbfile_path = subject_folder_path / dandi_filename
 
-    converter = RandiNature2023Converter(source_data=source_data)
+    if skip_existing is True and nwbfile_path.exists():
+        print(f"File at '{nwbfile_path}' exists - skipping!")
+        return None
+
+    if raw_or_processed == "raw":
+        source_data = {
+            "PumpProbeImagingInterfaceGreen": {
+                "pump_probe_folder_path": pump_probe_folder_path,
+                "channel_name": "Green",
+            },
+            "PumpProbeImagingInterfaceRed": {"pump_probe_folder_path": pump_probe_folder_path, "channel_name": "Red"},
+            "NeuroPALImagingInterface": {"multicolor_folder_path": multicolor_folder_path},
+        }
+        conversion_options = {
+            "PumpProbeImagingInterfaceGreen": {"stub_test": testing},
+            "PumpProbeImagingInterfaceRed": {"stub_test": testing},
+            "NeuroPALImagingInterface": {"stub_test": testing},
+        }
+    elif raw_or_processed == "processed":
+        source_data = {
+            "PumpProbeSegmentationInterfaceGreed": {
+                "pump_probe_folder_path": pump_probe_folder_path,
+                "channel_name": "Green",
+            },
+            "PumpProbeSegmentationInterfaceRed": {
+                "pump_probe_folder_path": pump_probe_folder_path,
+                "channel_name": "Red",
+            },
+            "NeuroPALSegmentationInterface": {"multicolor_folder_path": multicolor_folder_path},
+            "OptogeneticStimulationInterface": {"pump_probe_folder_path": pump_probe_folder_path},
+        }
+        conversion_options = {
+            "PumpProbeSegmentationInterfaceGreed": {"stub_test": testing},
+            "PumpProbeSegmentationInterfaceRed": {"stub_test": testing},
+        }
+
+    converter = RandiNature2023Converter(source_data=source_data, verbose=False)
 
     metadata = converter.get_metadata()
 
@@ -118,40 +145,30 @@ def pump_probe_to_nwb(
     metadata["NWBFile"]["experimenter"] = ["Randi, Francesco"]
     metadata["NWBFile"]["keywords"] = ["C. elegans", "optogenetics", "functional connectivity"]
 
-    assert (
-        this_subject_info["subject_id"] == subject_id
-    ), "Mismatch in subject ID between key and info value! Please double check the subject metadata YAML file."
+    metadata["Subject"]["subject_id"] = subject_id
 
-    metadata["Subject"]["subject_id"] = str(subject_id)
+    subject_description = ""
+    if growth_stage_comments := subject_info.get("growth_stage_comments", "none") != "none":
+        subject_description += f"Growth stage comments: {growth_stage_comments}\n"
+    if other_comments := subject_info.get("other_comments", "none") != "none":
+        subject_description += f"Other comments: {other_comments}\n"
+    if subject_description != "":
+        metadata["Subject"]["description"] = subject_description
 
-    lab_sex_mapping = {"H": "XX", "M": "XO"}
-    metadata["Subject"]["c_elegans_sex"] = lab_sex_mapping[this_subject_info["sex"]]
-
-    metadata["Subject"]["strain"] = this_subject_info["public_strain"]
+    metadata["Subject"]["species"] = "Caenorhabditis elegans"
+    metadata["Subject"]["age"] = "P1D"  # Could use 'days_on_dex' from the subject info file, but is it ever not 1?
+    metadata["Subject"]["sex"] = "O"
+    metadata["Subject"]["c_elegans_sex"] = "XX" if subject_info.get("sex", "H") == "H" else "XO"
+    metadata["Subject"]["strain"] = subject_info.get("public_strain", "AKS471.2.d")
     metadata["Subject"]["genotype"] = "WT"
-    metadata["Subject"]["age"] = "P1D"
-    metadata["Subject"]["growth_stage"] = this_subject_info["growth_stage"]
+    metadata["Subject"]["growth_stage"] = subject_info.get("growth_stage", "L4")
     metadata["Subject"]["cultivation_temp"] = 20.0
 
-    conversion_options = {
-        "PumpProbeImagingInterfaceGreen": {"stub_test": testing},
-        "PumpProbeImagingInterfaceRed": {"stub_test": testing},
-        "PumpProbeSegmentationInterfaceGreed": {"stub_test": testing},
-        "PumpProbeSegmentationInterfaceRed": {"stub_test": testing},
-        "NeuroPALImagingInterface": {"stub_test": testing},
-    }
-
-    if testing:
-        testing_folder_path = nwb_output_folder_path.parent / "nwb_testing"
-        testing_folder_path.mkdir(exist_ok=True)
-        nwbfile_path = testing_folder_path / f"{session_string}_stub.nwb"
-    else:
-        # Name and nest the file in a DANDI compliant way
-        subject_folder_path = nwb_output_folder_path / f"sub-{subject_id}"
-        subject_folder_path.mkdir(exist_ok=True)
-        dandi_session_string = session_string.replace("_", "-")
-        nwbfile_path = subject_folder_path / f"sub-{subject_id}_ses-{dandi_session_string}.nwb"
+    # Suppress false warning
+    warnings.filterwarnings(action="ignore", message="The linked table for DynamicTableRegion*", category=UserWarning)
 
     converter.run_conversion(
         nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True, conversion_options=conversion_options
     )
+
+    return None
