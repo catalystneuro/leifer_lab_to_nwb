@@ -21,8 +21,9 @@ SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
-
-ERROR_FOLDER = OUTPUT_FOLDER_PATH / "errors"
+ERROR_FOLDER = NWB_OUTPUT_FOLDER_PATH / "errors"
+COMPLETED_RAW_FILE_PATH = NWB_OUTPUT_FOLDER_PATH / "completed_raw_sessions.txt"
+LIMIT_RAW = 10
 
 if __name__ == "__main__":
     NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
@@ -30,6 +31,11 @@ if __name__ == "__main__":
 
     with open(file=SUBJECT_INFO_FILE_PATH, mode="r") as stream:
         all_subject_info = yaml.safe_load(stream=stream)
+
+    completed_raw_sessions = []
+    if COMPLETED_RAW_FILE_PATH.exists() and TESTING is False:
+        with open(file=COMPLETED_RAW_FILE_PATH, mode="r") as io:
+            completed_raw_sessions = io.readlines()
 
     # Check YAML for integrity
     for subject_key, subject_info in all_subject_info.items():
@@ -72,14 +78,15 @@ if __name__ == "__main__":
             with open(file=error_file_path, mode="w") as io:
                 io.write(message)
 
-    print("\n\nProcessed sessions are converted!\n\n")
+    print("\n\nProcessed sessions were converted!\n\n")
 
     # Convert all raw sessions
     raw_or_processed = "raw"
+    raw_counter = 0
     for subject_key, subject_info in tqdm.tqdm(
         iterable=all_subject_info.items(),
         total=len(all_subject_info),
-        desc="Converting processed sessions",
+        desc="Converting raw sessions",
         unit="session",
         position=0,
         leave=True,
@@ -87,6 +94,11 @@ if __name__ == "__main__":
         smoothing=0,
     ):
         try:
+            if raw_counter >= LIMIT_RAW:
+                break
+            if subject_key in completed_raw_sessions:
+                continue
+
             pump_probe_to_nwb(
                 base_folder_path=BASE_FOLDER_PATH,
                 subject_info_file_path=SUBJECT_INFO_FILE_PATH,
@@ -95,6 +107,12 @@ if __name__ == "__main__":
                 raw_or_processed="raw",
                 testing=TESTING,
             )
+
+            if TESTING is False:
+                raw_counter += 1
+
+                with open(file=COMPLETED_RAW_FILE_PATH, mode="a") as io:
+                    io.writeline(f"{subject_key}\n")
         except Exception as exception:
             error_file_path = ERROR_FOLDER / f"{subject_key}_{raw_or_processed}_testing={TESTING}_error.txt"
             message = (
@@ -105,4 +123,4 @@ if __name__ == "__main__":
             with open(file=error_file_path, mode="w") as io:
                 io.write(message)
 
-    print("\n\nRaw sessions are converted!\n\n")
+    print(f"\n\n{raw_counter} more raw sessions were converted!\n\n")

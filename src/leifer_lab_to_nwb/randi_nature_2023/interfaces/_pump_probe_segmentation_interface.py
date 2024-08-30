@@ -38,7 +38,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         with open(file=signal_file_path, mode="rb") as io:
             self.signal_info = pickle.load(file=io)
 
-        # Ignore ref_index from the mask info
+        # Ignore ref_index from the mask info since that varies quite a bit (it's the frame index used for labels)
         # And strip extra version attachments
         mask_type_info = {key: self.signal_info.info[key] for key in ["method", "version"]}
         mask_type_info["version"] = mask_type_info["version"].split("-")[0]
@@ -115,9 +115,6 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             ),
         )
 
-        # There are coords for each 'nInVolume', but only the ones for the span of the 30th frame are used
-        number_of_rois = self.signal_info.data.shape[1]
-
         # In most sessions, the labeled frame index is fixed to be the 30th frame
         # But there are many others where this is not the case
         labeled_frame_indices = [
@@ -129,22 +126,38 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             raise ValueError("More than one labeled frame in the 'brains.json' file.")
         labeled_frame_index = labeled_frame_indices[0]
 
+        # Check for possible file mismatches based on recorded metadata
+        if self.signal_info.info["ref_index"] != labeled_frame_index:
+            message = (
+                "Mismatch in the labeled frame index between the signal "
+                f"({self.signal_info.info['ref_index']}) and brains ({labeled_frame_index}) files!"
+            )
+            raise ValueError(message)
+
+        # There are coords for each 'nInVolume', but only the ones for the span of the labeled frames are used
+        number_of_rois_from_signal = self.signal_info.data.shape[1]
+        number_of_rois_from_brains = self.brains_info["nInVolume"][labeled_frame_index]
+        if number_of_rois_from_signal != number_of_rois_from_brains:
+            message = (
+                "Mismatch in the number of ROIs between the signal "
+                f"({number_of_rois_from_signal}) and brains ({number_of_rois_from_brains}) files!"
+            )
+            raise ValueError(message)
+        number_of_rois = number_of_rois_from_signal
+
         sub_start = sum(self.brains_info["nInVolume"][:labeled_frame_index])
         sub_coordinates = self.brains_info["coordZYX"][sub_start : (sub_start + number_of_rois)]
 
-        number_of_rois = self.brains_info["nInVolume"][labeled_frame_index]
         for pump_probe_roi_id in range(number_of_rois):
             coordinate_info = sub_coordinates[pump_probe_roi_id]
             coordinates = (coordinate_info[2], coordinate_info[1], coordinate_info[0], 1.0)
 
             plane_segmentation.add_row(
                 id=pump_probe_roi_id,
-                voxel_mask=[coordinates],  # TODO: add rest of box
+                voxel_mask=[coordinates],
                 neuropal_ids=self.brains_info["labels"][labeled_frame_index][pump_probe_roi_id].replace(" ", ""),
             )
 
-        # TODO: might prefer to combine plane segmentations over image segmentation objects
-        # to reduce clutter
         image_segmentation = ndx_microscopy.MicroscopySegmentations(
             name=f"PumpProbe{self.channel_name}Segmentations", microscopy_plane_segmentations=[plane_segmentation]
         )
