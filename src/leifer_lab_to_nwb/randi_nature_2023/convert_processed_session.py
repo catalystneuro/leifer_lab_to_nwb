@@ -21,7 +21,7 @@ SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
 
 # The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry
 # For testing, subject ID '26' matches date '20211104' used in Figure 1 of the paper
-SUBJECT_ID = 26
+SUBJECT_ID = 0
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"

@@ -38,10 +38,13 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         with open(file=signal_file_path, mode="rb") as io:
             self.signal_info = pickle.load(file=io)
 
-        mask_type_info = {key: self.signal_info.info[key] for key in ["method", "ref_index", "version"]}
+        # Ignore ref_index from the mask info
+        # And strip extra version attachments
+        mask_type_info = {key: self.signal_info.info[key] for key in ["method", "version"]}
+        mask_type_info["version"] = mask_type_info["version"].split("-")[0]
         all_expected_mask_type_info = [
-            {"method": "box", "ref_index": 1468, "version": "v1.0-50-g5ba2f9c.dirty"},
-            {"method": "box", "ref_index": 30, "version": "1.5"},  # The gold standard example; from the Fig. 1 data
+            {"method": "box", "version": "v1.0"},  # Seen in earlier; usually .dirty; might still produce similar box
+            {"method": "box", "version": "1.5"},  # The gold standard example; from the Fig. 1 data
         ]
         assert mask_type_info in all_expected_mask_type_info, (
             "Unimplemented method detected for mask type."
@@ -114,7 +117,18 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
 
         # There are coords for each 'nInVolume', but only the ones for the span of the 30th frame are used
         number_of_rois = self.signal_info.data.shape[1]
-        labeled_frame_index = 30
+
+        # In most sessions, the labeled frame index is fixed to be the 30th frame
+        # But there are many others where this is not the case
+        labeled_frame_indices = [
+            index for index, frame_labels in enumerate(self.brains_info["labels"]) if len(frame_labels) != 0
+        ]
+        if len(labeled_frame_indices) == 0:
+            raise ValueError("No labeled frames found in the 'brains.json' file.")
+        if len(labeled_frame_indices) > 1:
+            raise ValueError("More than one labeled frame in the 'brains.json' file.")
+        labeled_frame_index = labeled_frame_indices[0]
+
         sub_start = sum(self.brains_info["nInVolume"][:labeled_frame_index])
         sub_coordinates = self.brains_info["coordZYX"][sub_start : (sub_start + number_of_rois)]
 
@@ -150,10 +164,10 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
                 f"Average baseline fluorescence for the '{self.channel_name}' optical channel extracted from the raw "
                 "imaging and averaged over a volume defined as a complete scan cycle over volumetric depths."
             ),
-            data=self.signal_info.data,
+            data=self.signal_info.data[:stub_frames, :],
             table_region=plane_segmentation_region,
             unit="n.a.",
-            timestamps=self.timestamps_per_volume,
+            timestamps=self.timestamps_per_volume[:stub_frames],
         )
 
         # TODO: should probably combine all of these into a single container
