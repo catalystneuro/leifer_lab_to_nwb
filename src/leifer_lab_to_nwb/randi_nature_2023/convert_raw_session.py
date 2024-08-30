@@ -1,4 +1,4 @@
-"""Main conversion script for a single session of data for the Randi et al. Nature 2023 paper."""
+"""Main conversion script for a single session of raw imaging data for the Randi et al. Nature 2023 paper."""
 
 import pathlib
 
