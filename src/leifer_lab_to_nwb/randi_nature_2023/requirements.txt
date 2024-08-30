@@ -1,5 +1,0 @@
-neuroconv==0.6.1
-roiextractors==0.5.6
-ndx-subjects==v0.2.0
-ndx-patterned-ogen @ git+https://github.com/catalystneuro/ndx-patterned-ogen.git@1880684f33c220c502283dba88a458739df9174e
-ndx_microscopy @ git+https://github.com/catalystneuro/ndx-microscopy.git@6f5ceae572394e84d6da3170b757a14b069ab30e
