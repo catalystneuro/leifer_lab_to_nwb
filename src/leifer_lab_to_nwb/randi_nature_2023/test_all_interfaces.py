@@ -1,7 +1,7 @@
 """
 Test each individual interface by performing standalone file creations.
 
-An actual conversion should use the `convert_session.py` or `convert_data.py` scripts.
+An actual conversion should use the `convert_*.py` scripts.
 
 This just makes debugging easier.
 """

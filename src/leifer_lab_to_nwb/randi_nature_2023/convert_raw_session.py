@@ -12,8 +12,8 @@ from leifer_lab_to_nwb.randi_nature_2023 import RandiNature2023Converter
 
 # STUB_TEST=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
 # STUB_TEST=False performs a full file conversion
-STUB_TEST = True
-# STUB_TEST = False
+# STUB_TEST = True
+STUB_TEST = False
 
 
 # Define base folder of source data
@@ -48,12 +48,7 @@ MULTICOLOR_FOLDER_PATH = str(MULTICOLOR_FOLDER_PATH)
 source_data = {
     "PumpProbeImagingInterfaceGreen": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
     "PumpProbeImagingInterfaceRed": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
-    "PumpProbeSegmentationInterfaceGreed": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
-    "PumpProbeSegmentationInterfaceRed": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
     "NeuroPALImagingInterface": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
-    "NeuroPALSegmentationInterface": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
-    "OptogeneticStimulationInterface": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
-    "ExtraOphysMetadataInterface": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
 }
 
 converter = RandiNature2023Converter(source_data=source_data)
@@ -107,7 +102,7 @@ else:
     subject_folder_path = NWB_OUTPUT_FOLDER_PATH / f"sub-{subject_id}"
     subject_folder_path.mkdir(exist_ok=True)
     dandi_session_string = session_string.replace("_", "-")
-    nwbfile_path = subject_folder_path / f"sub-{subject_id}_ses-{dandi_session_string}.nwb"
+    nwbfile_path = subject_folder_path / f"sub-{subject_id}_ses-{dandi_session_string}_desc-imaging_ophys.nwb"
 
 converter.run_conversion(
     nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True, conversion_options=conversion_options
