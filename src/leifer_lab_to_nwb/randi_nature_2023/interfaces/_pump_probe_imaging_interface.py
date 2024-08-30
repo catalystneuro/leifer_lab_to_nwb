@@ -119,20 +119,26 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             microscope = nwbfile.devices["Microscope"]
 
         if "MicroscopyLightSource" not in nwbfile.devices:
-            light_source = ndx_microscopy.MicroscopyLightSource(name="MicroscopyLightSource")  # TODO
+            light_source = ndx_microscopy.MicroscopyLightSource(name="MicroscopyLightSource")
             nwbfile.add_device(devices=light_source)
         else:
             light_source = nwbfile.devices["MicroscopyLightSource"]
 
         if "PumpProbeImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.PlanarImagingSpace(
-                name="PumpProbeImagingSpace", description="", microscope=microscope
+                name="PumpProbeImagingSpace",
+                description="The variable-depth imaging space scanned by the PumpProbe system.",
+                microscope=microscope,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
             imaging_space = nwbfile.lab_meta_data["PumpProbeImagingSpace"]
 
-        optical_channel = ndx_microscopy.MicroscopyOpticalChannel(name=self.channel_name, description="", indicator="")
+        optical_channel = ndx_microscopy.MicroscopyOpticalChannel(
+            name=f"{self.channel_name}OpticalChannel",
+            description="An optical filter applied to the functional recording (distinct from the NeuroPAL registration).",
+            indicator="GCaMP6s",
+        )
         nwbfile.add_lab_meta_data(lab_meta_data=optical_channel)
 
         # Not exposing chunking/buffering control here for simplicity; but this is where they would be passed
@@ -144,7 +150,6 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         num_frames_per_chunk = int(chunk_size_bytes / frame_size_bytes)
         chunk_shape = (max(min(num_frames_per_chunk, num_frames), 1), x, y)
 
-        # TODO: add ndx-micorscopy support to NeuroConv BackendConfiguration to avoid need for H5DataIO
         imaging_data = self.imaging_data_for_channel if not stub_test else self.imaging_data_for_channel[:stub_frames]
         data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(
             data=imaging_data, chunk_shape=chunk_shape, display_progress=display_progress
@@ -155,7 +160,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         variable_depth_microscopy_series = ndx_microscopy.VariableDepthMicroscopySeries(
             name=f"PumpProbeImaging{self.channel_name}",
-            description="",  # TODO
+            description="The raw functional imaging data of the variable-depth PumpProbe scan.",
             microscope=microscope,
             light_source=light_source,
             imaging_space=imaging_space,

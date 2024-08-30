@@ -75,7 +75,6 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         stub_test: bool = False,
         stub_depths: int = 3,
     ) -> None:
-        # TODO: enhance all metadata
         if "Microscope" not in nwbfile.devices:
             microscope = ndx_microscopy.Microscope(name="Microscope")
             nwbfile.add_device(devices=microscope)
@@ -90,7 +89,9 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         if "NeuroPALImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.VolumetricImagingSpace(
-                name="NeuroPALImagingSpace", description="", microscope=microscope
+                name="NeuroPALImagingSpace",
+                description="The static variable-depth volume scan used for NeuroPAL registration.",
+                microscope=microscope,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
@@ -106,7 +107,9 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             light_sources.append(light_source)
 
             optical_channel = ndx_microscopy.MicroscopyOpticalChannel(
-                name=f"{channel_name}Filter", description="", indicator=channel_name
+                name=f"{channel_name}Filter",
+                description="A filter used for the NeuroPAL setup.",
+                indicator=channel_name,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=optical_channel)
             optical_channels.append(optical_channel)
@@ -115,7 +118,6 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         chunk_shape = (1, 1, self.data_shape[-2], self.data_shape[-1])
 
         # Best we can do is limit the number of depths that are written by stub
-        # TODO: add ndx-micorscopy support to NeuroConv BackendConfiguration to avoid need for H5DataIO
         imaging_data = self.data if not stub_test else self.data[:stub_depths, :, :, :]
         data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(data=imaging_data, chunk_shape=chunk_shape)
         data_iterator = pynwb.H5DataIO(data_iterator, compression="gzip")
@@ -124,7 +126,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         multi_channel_microscopy_volume = ndx_microscopy.VariableDepthMultiChannelMicroscopyVolume(
             name="NeuroPALImaging",
-            description="",
+            description="A static volume scan used for NeuroPAL registration.",
             microscope=microscope,
             light_sources=light_sources[0],  # TODO
             imaging_space=imaging_space,

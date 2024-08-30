@@ -81,7 +81,9 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
 
         if "PumpProbeImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.PlanarImagingSpace(
-                name="PumpProbeImagingSpace", description="", microscope=microscope
+                name="PumpProbeImagingSpace",
+                description="The variable-depth imaging space scanned by the PumpProbe system.",
+                microscope=microscope,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
