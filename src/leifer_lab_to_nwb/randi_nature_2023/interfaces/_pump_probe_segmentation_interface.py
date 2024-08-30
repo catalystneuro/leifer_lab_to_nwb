@@ -7,12 +7,13 @@ import ndx_microscopy
 import neuroconv
 import numpy
 import pandas
+import pydantic
 import pynwb
 
 
 class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
 
-    def __init__(self, *, pumpprobe_folder_path: str | pathlib.Path, channel_name: Literal["Green", "Red"] | str):
+    def __init__(self, *, pumpprobe_folder_path: pydantic.DirectoryPath, channel_name: Literal["Green", "Red"] | str):
         """
         A custom interface for the raw volumetric pumpprobe data.
 

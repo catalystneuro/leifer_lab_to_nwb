@@ -1,20 +1,33 @@
+import datetime
 import typing
 import warnings
 
+import dateutil.tz
 import pydantic
+
+from ._randi_nature_2023_converter import RandiNature2023Converter
 
 
 @pydantic.validate_call
 def convert_session(
+    *,
     pumpprobe_folder_path: pydantic.DirectoryPath,
     multicolor_folder_path: pydantic.DirectoryPath,
     nwb_output_folder_path: pydantic.DirectoryPath,
-    subject_info: typing.Union[dict, None],
     raw_or_processed: typing.Literal["raw", "processed"],
+    subject_info: typing.Union[dict, None] = None,
     stub_test: bool = False,
     skip_existing: bool = True,
 ) -> None:
     subject_info = subject_info or dict()
+
+    # Parse session start time from the pumpprobe path
+    session_string = pumpprobe_folder_path.stem.removeprefix("pumpprobe_")
+    session_start_time = datetime.datetime.strptime(session_string, "%Y%m%d_%H%M%S")
+    session_start_time = session_start_time.replace(tzinfo=dateutil.tz.gettz("US/Eastern"))
+
+    subject_id_from_start_time = session_start_time.strftime("%y%m%d")
+    subject_id = subject_info.get("subject_id", subject_id_from_start_time)
 
     if stub_test is True:
         stub_folder_path = nwb_output_folder_path / "stubs"
@@ -31,14 +44,6 @@ def convert_session(
 
     if skip_existing is True and nwbfile_path.exists():
         return None
-
-    # Suppress false warning
-    warnings.filterwarnings(action="ignore", message="The linked table for DynamicTableRegion*", category=UserWarning)
-
-    # Parse session start time from the pumpprobe path
-    session_string = pumpprobe_folder_path.stem.removeprefix("pumpprobe_")
-    session_start_time = datetime.datetime.strptime(session_string, "%Y%m%d_%H%M%S")
-    session_start_time = session_start_time.replace(tzinfo=dateutil.tz.gettz("US/Eastern"))
 
     if raw_or_processed == "raw":
         source_data = {
@@ -92,8 +97,7 @@ def convert_session(
     metadata["NWBFile"]["experimenter"] = ["Randi, Francesco"]
     metadata["NWBFile"]["keywords"] = ["C. elegans", "optogenetics", "functional connectivity"]
 
-    subject_id_from_start_time = session_start_time.strftime("%y%m%d")
-    metadata["Subject"]["subject_id"] = subject_info.get("subject_id", subject_id_from_start_time)
+    metadata["Subject"]["subject_id"] = subject_id
 
     subject_description = ""
     if growth_stage_comments := subject_info.get("growth_stage_comments", "none") != "none":
@@ -114,6 +118,9 @@ def convert_session(
         metadata["Subject"]["growth_stage"] = subject_info["growth_stage"]
 
     metadata["Subject"]["cultivation_temp"] = 20.0
+
+    # Suppress false warning
+    warnings.filterwarnings(action="ignore", message="The linked table for DynamicTableRegion*", category=UserWarning)
 
     converter.run_conversion(
         nwbfile_path=nwbfile_path, metadata=metadata, overwrite=True, conversion_options=conversion_options

@@ -60,8 +60,8 @@ for subject_info in tqdm.tqdm(
         pumpprobe_folder_path=pumpprobe_folder_path,
         multicolor_folder_path=multicolor_folder_path,
         nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
-        subject_info=subject_info,
         raw_or_processed=raw_or_processed,
+        subject_info=subject_info,
         stub_test=STUB_TEST,
         skip_existing=SKIP_EXISTING,
     )
@@ -87,8 +87,8 @@ for subject_info in tqdm.tqdm(
         pumpprobe_folder_path=pumpprobe_folder_path,
         multicolor_folder_path=multicolor_folder_path,
         nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
-        subject_info=subject_info,
         raw_or_processed=raw_or_processed,
+        subject_info=subject_info,
         stub_test=STUB_TEST,
         skip_existing=SKIP_EXISTING,
     )

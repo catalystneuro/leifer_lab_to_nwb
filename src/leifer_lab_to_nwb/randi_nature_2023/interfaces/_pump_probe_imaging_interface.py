@@ -6,9 +6,9 @@ import ndx_microscopy
 import neuroconv
 import numpy
 import pandas
+import pydantic
 import pynwb
 
-_DEFAULT_CHANNEL_NAMES = ["Green", "Red"]
 _DEFAULT_CHANNEL_FRAME_SLICING = {
     "Green": (slice(0, 512), slice(0, 512)),
     "Red": (slice(512, 1024), slice(0, 512)),
@@ -17,11 +17,15 @@ _DEFAULT_CHANNEL_FRAME_SLICING = {
 
 class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
+    @classmethod
+    def get_source_schema(cls) -> dict:
+        return neuroconv.utils.get_json_schema_from_method_signature(cls, exclude=["channel_frame_slicing"])
+
     def __init__(
         self,
         *,
-        pumpprobe_folder_path: str | pathlib.Path,
-        channel_name: Literal[_DEFAULT_CHANNEL_NAMES] | str,
+        pumpprobe_folder_path: pydantic.DirectoryPath,
+        channel_name: Literal[["Green", "Red"]] | str,
         channel_frame_slicing: tuple[slice, slice] | None = None,
     ) -> None:
         """
