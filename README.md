@@ -1,10 +1,6 @@
 # leifer_lab_to_nwb
 
-<<<<<<< HEAD
-Conversion scripts for the Leifer lab.
-=======
 Conversion scripts and command line utilities for converting data from the Leifer lab PumpProbe system to NeurodataWithoutBorders (NWB) format.
->>>>>>> main
 
 Includes the publication Neural signal propagation atlas of Caenorhabditis elegans (Nature, 2023).
 
