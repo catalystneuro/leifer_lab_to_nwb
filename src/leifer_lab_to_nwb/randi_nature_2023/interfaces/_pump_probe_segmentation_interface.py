@@ -35,11 +35,13 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             self.signal_info = pickle.load(file=io)
 
         mask_type_info = {key: self.signal_info.info[key] for key in ["method", "ref_index", "version"]}
-        expected_mask_type_info = {"method": "box", "ref_index": 30, "version": "1.5"}
-        assert mask_type_info == expected_mask_type_info, (
+        all_expected_mask_type_info = [
+            {"method": "box", "ref_index": 1468, "version": "v1.0-50-g5ba2f9c.dirty"},
+            {"method": "box", "ref_index": 30, "version": "1.5"},  # The gold standard example; from the Fig. 1 data
+        ]
+        assert mask_type_info in all_expected_mask_type_info, (
             "Unimplemented method detected for mask type."
-            f"\n\nReceived: {mask_type_info}"
-            f"\n\nExpected: {expected_mask_type_info}"
+            f"\n\nFull signal info: {json.dumps(obj=self.signal_info.info, indent=2)}"
             "\n\nPlease raise an issue to have the new mask type incorporated."
         )
 

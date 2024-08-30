@@ -52,7 +52,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             channel_name=channel_name,
             channel_frame_slicing=channel_frame_slicing,
         )
-        if channel_name not in _DEFAULT_CHANNEL_NAMES and channel_frame_slicing is None:
+        if channel_name not in ["Green", "Red"] and channel_frame_slicing is None:
             raise ValueError(
                 f"A custom `optical_channel_name` was specified ('{channel_name}') and was not one of the "
                 f"known defaults ('{_DEFAULT_CHANNEL_NAMES}'), but no frame slicing pattern was passed."

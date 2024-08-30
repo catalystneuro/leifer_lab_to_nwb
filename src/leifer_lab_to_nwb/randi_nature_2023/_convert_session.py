@@ -27,29 +27,30 @@ def convert_session(
     session_start_time = session_start_time.replace(tzinfo=dateutil.tz.gettz("US/Eastern"))
 
     subject_id_from_start_time = session_start_time.strftime("%y%m%d")
-    subject_id = subject_info.get("subject_id", subject_id_from_start_time)
+    subject_id = str(subject_info.get("subject_id", subject_id_from_start_time))
 
+    session_type = "imaging" if raw_or_processed == "raw" else "segmentation"
     if stub_test is True:
         stub_folder_path = nwb_output_folder_path / "stubs"
         stub_folder_path.mkdir(exist_ok=True)
-        nwbfile_path = stub_folder_path / f"{session_string}_stub.nwb"
+        nwbfile_path = stub_folder_path / f"{session_string}_stub_{session_type}.nwb"
     else:
         # Name and nest the file in a DANDI compliant way
         subject_folder_path = nwb_output_folder_path / f"sub-{subject_id}"
         subject_folder_path.mkdir(exist_ok=True)
         dandi_session_string = session_string.replace("_", "-")
-        session_type = "imaging" if raw_or_processed == "raw" else "segmentation"
         dandi_filename = f"sub-{subject_id}_ses-{dandi_session_string}_desc-{session_type}_ophys+ogen.nwb"
         nwbfile_path = subject_folder_path / dandi_filename
 
     if skip_existing is True and nwbfile_path.exists():
+        print(f"File at '{nwbfile_path}' exists - skipping!")
         return None
 
     if raw_or_processed == "raw":
         source_data = {
-            "PumpProbeImagingInterfaceGreen": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
-            "PumpProbeImagingInterfaceRed": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
-            "NeuroPALImagingInterface": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
+            "PumpProbeImagingInterfaceGreen": {"pumpprobe_folder_path": pumpprobe_folder_path, "channel_name": "Green"},
+            "PumpProbeImagingInterfaceRed": {"pumpprobe_folder_path": pumpprobe_folder_path, "channel_name": "Red"},
+            "NeuroPALImagingInterface": {"multicolor_folder_path": multicolor_folder_path},
         }
         conversion_options = {
             "PumpProbeImagingInterfaceGreen": {"stub_test": stub_test},
@@ -74,7 +75,7 @@ def convert_session(
             "PumpProbeSegmentationInterfaceRed": {"stub_test": stub_test},
         }
 
-    converter = RandiNature2023Converter(source_data=source_data)
+    converter = RandiNature2023Converter(source_data=source_data, verbose=False)
 
     metadata = converter.get_metadata()
 
@@ -113,10 +114,7 @@ def convert_session(
     metadata["Subject"]["c_elegans_sex"] = "XX" if subject_info.get("sex", "H") == "H" else "XO"
     metadata["Subject"]["strain"] = subject_info.get("public_strain", "AKS471.2.d")
     metadata["Subject"]["genotype"] = "WT"
-
-    if "growth_sage" in subject_info:
-        metadata["Subject"]["growth_stage"] = subject_info["growth_stage"]
-
+    metadata["Subject"]["growth_stage"] = subject_info.get("growth_stage", "L4")
     metadata["Subject"]["cultivation_temp"] = 20.0
 
     # Suppress false warning

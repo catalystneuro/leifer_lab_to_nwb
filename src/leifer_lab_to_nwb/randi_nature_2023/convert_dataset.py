@@ -52,7 +52,7 @@ for subject_info in tqdm.tqdm(
     mininterval=5.0,
     smoothing=0,
 ):
-    session_folder_path = SOURCE_FOLDER_PATH / subject_info["date"]
+    session_folder_path = SOURCE_FOLDER_PATH / str(subject_info["date"])
     pumpprobe_folder_path = session_folder_path / subject_info["pump_probe_folder"]
     multicolor_folder_path = session_folder_path / subject_info["multicolor_folder"]
 
