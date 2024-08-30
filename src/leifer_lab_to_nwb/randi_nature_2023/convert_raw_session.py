@@ -21,7 +21,9 @@ SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
 # For testing, subject ID '26' matches date '20211104' used in Figure 1 of the paper
 SUBJECT_ID = 26
 
-NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
+OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
+NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
+NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
 
 
 if __name__ == "__main__":
