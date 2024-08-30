@@ -153,7 +153,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             imaging_space=imaging_space,
             optical_channels=optical_channels_used_by_volume,
             data=data_iterator,
-            depth_per_frame_in_um=depth_per_frame_in_um,
+            depth_per_frame_in_um=depth_per_frame_in_um[:stub_depths],
             unit="n.a.",
         )
         nwbfile.add_acquisition(multi_channel_microscopy_volume)

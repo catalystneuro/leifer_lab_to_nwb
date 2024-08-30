@@ -171,7 +171,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             imaging_space=imaging_space,
             optical_channel=optical_channel,
             data=data_iterator,
-            depth_per_frame_in_um=self.series_depth_per_frame_in_um,
+            depth_per_frame_in_um=self.series_depth_per_frame_in_um[:num_frames],
             unit="n.a.",
             timestamps=timestamps,
         )
