@@ -77,5 +77,15 @@ def _pump_probe_to_nwb_cli(
         subject_info_file_path=subject_info_file_path,
         subject_id=subject_id,
         nwb_output_folder_path=nwb_output_folder_path,
+        raw_or_processed="processed",
+        testing=testing,
+    )
+
+    pump_probe_to_nwb(
+        base_folder_path=base_folder_path,
+        subject_info_file_path=subject_info_file_path,
+        subject_id=subject_id,
+        nwb_output_folder_path=nwb_output_folder_path,
+        raw_or_processed="raw",
         testing=testing,
     )

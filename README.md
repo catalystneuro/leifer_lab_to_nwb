@@ -1,4 +1,4 @@
-# leifer-lab-to-nwb
+# leifer_lab_to_nwb
 
 Conversion scripts and command line utilities for converting data from the Leifer lab PumpProbe system to NeurodataWithoutBorders (NWB) format.
 

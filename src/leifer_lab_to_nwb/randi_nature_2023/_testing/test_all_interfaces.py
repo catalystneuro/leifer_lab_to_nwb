@@ -1,7 +1,7 @@
 """
 Test each individual interface by performing standalone file creations.
 
-An actual conversion should use the `convert_session.py` or `convert_data.py` scripts.
+An actual conversion should use the `convert_*.py` scripts.
 
 This just makes debugging easier.
 """
@@ -49,19 +49,19 @@ MULTICOLOR_FOLDER_PATH = str(MULTICOLOR_FOLDER_PATH)
 
 interfaces_classes_to_test = {
     "PumpProbeImagingInterfaceGreen": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
         "conversion_options": {"stub_test": True},
     },
     "PumpProbeImagingInterfaceRed": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
         "conversion_options": {"stub_test": True},
     },
     "PumpProbeSegmentationInterfaceGreed": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Green"},
         "conversion_options": {"stub_test": True},
     },
     "PumpProbeSegmentationInterfaceRed": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH, "channel_name": "Red"},
         "conversion_options": {"stub_test": True},
     },
     "NeuroPALImagingInterface": {
@@ -72,10 +72,10 @@ interfaces_classes_to_test = {
         "source_data": {"multicolor_folder_path": MULTICOLOR_FOLDER_PATH},
     },
     "OptogeneticStimulationInterface": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH},
     },
     "ExtraOphysMetadataInterface": {
-        "source_data": {"pumpprobe_folder_path": PUMPPROBE_FOLDER_PATH},
+        "source_data": {"pump_probe_folder_path": PUMPPROBE_FOLDER_PATH},
     },
 }
 

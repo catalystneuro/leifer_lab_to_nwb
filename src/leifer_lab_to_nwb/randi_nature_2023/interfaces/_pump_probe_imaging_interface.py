@@ -5,21 +5,22 @@ import ndx_microscopy
 import neuroconv
 import numpy
 import pandas
+import pydantic
 import pynwb
 
-_DEFAULT_CHANNEL_NAMES = ["Green", "Red"]
-_DEFAULT_CHANNEL_FRAME_SLICING = {
-    "Green": (slice(0, 512), slice(0, 512)),
-    "Red": (slice(512, 1024), slice(0, 512)),
-}
+from ._globals import _DEFAULT_CHANNEL_FRAME_SLICING, _DEFAULT_CHANNEL_NAMES
 
 
 class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
+    @classmethod
+    def get_source_schema(cls) -> dict:
+        return neuroconv.utils.get_json_schema_from_method_signature(cls, exclude=["channel_frame_slicing"])
+
     def __init__(
         self,
         *,
-        pump_probe_folder_path: str | pathlib.Path,
+        pump_probe_folder_path: pydantic.DirectoryPath,
         channel_name: Literal[_DEFAULT_CHANNEL_NAMES] | str,
         channel_frame_slicing: tuple[slice, slice] | None = None,
     ) -> None:
@@ -118,20 +119,26 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             microscope = nwbfile.devices["Microscope"]
 
         if "MicroscopyLightSource" not in nwbfile.devices:
-            light_source = ndx_microscopy.MicroscopyLightSource(name="MicroscopyLightSource")  # TODO
+            light_source = ndx_microscopy.MicroscopyLightSource(name="MicroscopyLightSource")
             nwbfile.add_device(devices=light_source)
         else:
             light_source = nwbfile.devices["MicroscopyLightSource"]
 
         if "PumpProbeImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.PlanarImagingSpace(
-                name="PumpProbeImagingSpace", description="", microscope=microscope
+                name="PumpProbeImagingSpace",
+                description="The variable-depth imaging space scanned by the PumpProbe system.",
+                microscope=microscope,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
             imaging_space = nwbfile.lab_meta_data["PumpProbeImagingSpace"]
 
-        optical_channel = ndx_microscopy.MicroscopyOpticalChannel(name=self.channel_name, description="", indicator="")
+        optical_channel = ndx_microscopy.MicroscopyOpticalChannel(
+            name=f"{self.channel_name}OpticalChannel",
+            description="An optical filter applied to the functional recording (distinct from the NeuroPAL registration).",
+            indicator="GCaMP6s",
+        )
         nwbfile.add_lab_meta_data(lab_meta_data=optical_channel)
 
         # Not exposing chunking/buffering control here for simplicity; but this is where they would be passed
@@ -158,13 +165,13 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         variable_depth_microscopy_series = ndx_microscopy.VariableDepthMicroscopySeries(
             name=f"PumpProbeImaging{self.channel_name}",
-            description="",  # TODO
+            description="The raw functional imaging data of the variable-depth PumpProbe scan.",
             microscope=microscope,
             light_source=light_source,
             imaging_space=imaging_space,
             optical_channel=optical_channel,
             data=data_iterator,
-            depth_per_frame_in_um=self.series_depth_per_frame_in_um,
+            depth_per_frame_in_um=self.series_depth_per_frame_in_um[:num_frames],
             unit="n.a.",
             timestamps=timestamps,
         )

@@ -5,12 +5,13 @@ import ndx_patterned_ogen
 import neuroconv
 import numpy
 import pandas
+import pydantic
 import pynwb
 
 
 class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
 
-    def __init__(self, *, pump_probe_folder_path: str | pathlib.Path):
+    def __init__(self, *, pump_probe_folder_path: pydantic.DirectoryPath):
         """
         A custom interface for the two photon optogenetic stimulation data.
 

@@ -1,10 +1,7 @@
-"""
-Main conversion script for a single session of data for the Randi et al. Nature 2023 paper.
-
-This script can be run directly using the global (capitalized) variables defined towards the top of the file.
-"""
+"""Main conversion script for a single session of raw imaging data for the Randi et al. Nature 2023 paper."""
 
 import pathlib
+
 
 from leifer_lab_to_nwb.randi_nature_2023 import pump_probe_to_nwb
 
@@ -24,7 +21,9 @@ SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
 # For testing, subject ID '26' matches date '20211104' used in Figure 1 of the paper
 SUBJECT_ID = 26
 
-NWB_OUTPUT_FOLDER_PATH = BASE_FOLDER_PATH / "nwbfiles"
+OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
+NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
+NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
 
 
 if __name__ == "__main__":
@@ -33,5 +32,6 @@ if __name__ == "__main__":
         subject_info_file_path=SUBJECT_INFO_FILE_PATH,
         subject_id=SUBJECT_ID,
         nwb_output_folder_path=NWB_OUTPUT_FOLDER_PATH,
+        raw_or_processed="raw",
         testing=TESTING,
     )

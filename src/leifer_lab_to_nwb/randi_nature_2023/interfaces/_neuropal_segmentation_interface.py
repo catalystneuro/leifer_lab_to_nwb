@@ -3,13 +3,13 @@ import pathlib
 
 import ndx_microscopy
 import neuroconv
+import pydantic
 import pynwb
-from neuroconv.basedatainterface import BaseDataInterface
 
 
-class NeuroPALSegmentationInterface(BaseDataInterface):
+class NeuroPALSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
 
-    def __init__(self, *, multicolor_folder_path: str | pathlib.Path):
+    def __init__(self, *, multicolor_folder_path: pydantic.DirectoryPath):
         """
         A custom interface for the raw volumetric NeuroPAL data.
 
@@ -92,7 +92,7 @@ class NeuroPALSegmentationInterface(BaseDataInterface):
             )
 
         image_segmentation = ndx_microscopy.MicroscopySegmentations(
-            name="NeuroPALImageSegmentation", microscopy_plane_segmentations=[plane_segmentation]
+            name="NeuroPALSegmentations", microscopy_plane_segmentations=[plane_segmentation]
         )
 
         ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")

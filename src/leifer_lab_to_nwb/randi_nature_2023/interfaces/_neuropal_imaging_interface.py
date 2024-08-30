@@ -4,13 +4,14 @@ import pathlib
 import ndx_microscopy
 import neuroconv
 import numpy
+import pydantic
 import pynwb
 
 
 class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
     """Custom interface for automatically setting metadata and conversion options for this experiment."""
 
-    def __init__(self, *, multicolor_folder_path: str | pathlib.Path) -> None:
+    def __init__(self, *, multicolor_folder_path: pydantic.DirectoryPath) -> None:
         """
         A custom interface for the raw volumetric PumpProbe data.
 
@@ -72,7 +73,6 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         stub_test: bool = False,
         stub_depths: int = 3,
     ) -> None:
-        # TODO: enhance all metadata
         if "Microscope" not in nwbfile.devices:
             microscope = ndx_microscopy.Microscope(name="Microscope")
             nwbfile.add_device(devices=microscope)
@@ -87,7 +87,9 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         if "NeuroPALImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.VolumetricImagingSpace(
-                name="NeuroPALImagingSpace", description="", microscope=microscope
+                name="NeuroPALImagingSpace",
+                description="The static variable-depth volume scan used for NeuroPAL registration.",
+                microscope=microscope,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
@@ -103,10 +105,24 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             light_sources.append(light_source)
 
             optical_channel = ndx_microscopy.MicroscopyOpticalChannel(
-                name=f"{channel_name}Filter", description="", indicator=channel_name
+                name=f"{channel_name}Filter",
+                description="A filter used for the NeuroPAL setup.",
+                indicator=channel_name,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=optical_channel)
             optical_channels.append(optical_channel)
+
+        light_sources_used_by_volume = pynwb.base.VectorData(
+            name="light_sources", description="Light sources used by this MultiChannelVolume.", data=light_sources
+        )
+        optical_channels_used_by_volume = pynwb.base.VectorData(
+            name="optical_channels",
+            description=(
+                "Optical channels ordered to correspond to the third axis (e.g., [0, 0, :, 0]) "
+                "of the data for this MultiChannelVolume."
+            ),
+            data=optical_channels,
+        )
 
         # Not exposing chunking/buffering control here for simplicity; note that a single frame is about 8 MB
         chunk_shape = (1, 1, self.data_shape[-2], self.data_shape[-1])
@@ -131,13 +147,13 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         )
         multi_channel_microscopy_volume = ndx_microscopy.VariableDepthMultiChannelMicroscopyVolume(
             name="NeuroPALImaging",
-            description="",
+            description="A static volume scan used for NeuroPAL registration.",
             microscope=microscope,
-            imaging_space=imaging_space,
             light_sources=light_sources_used_by_volume,
+            imaging_space=imaging_space,
             optical_channels=optical_channels_used_by_volume,
             data=data_iterator,
-            depth_per_frame_in_um=depth_per_frame_in_um,
+            depth_per_frame_in_um=depth_per_frame_in_um[:stub_depths],
             unit="n.a.",
         )
         nwbfile.add_acquisition(multi_channel_microscopy_volume)

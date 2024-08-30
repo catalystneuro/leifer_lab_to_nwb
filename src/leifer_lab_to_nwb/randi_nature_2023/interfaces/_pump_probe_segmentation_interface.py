@@ -7,12 +7,17 @@ import ndx_microscopy
 import neuroconv
 import numpy
 import pandas
+import pydantic
 import pynwb
+
+from ._globals import _DEFAULT_CHANNEL_NAMES
 
 
 class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
 
-    def __init__(self, *, pump_probe_folder_path: str | pathlib.Path, channel_name: Literal["Green", "Red"] | str):
+    def __init__(
+        self, *, pump_probe_folder_path: pydantic.DirectoryPath, channel_name: Literal[_DEFAULT_CHANNEL_NAMES]
+    ):
         """
         A custom interface for the raw volumetric pumpprobe data.
 
@@ -34,11 +39,13 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             self.signal_info = pickle.load(file=io)
 
         mask_type_info = {key: self.signal_info.info[key] for key in ["method", "ref_index", "version"]}
-        expected_mask_type_info = {"method": "box", "ref_index": 30, "version": "1.5"}
-        assert mask_type_info == expected_mask_type_info, (
+        all_expected_mask_type_info = [
+            {"method": "box", "ref_index": 1468, "version": "v1.0-50-g5ba2f9c.dirty"},
+            {"method": "box", "ref_index": 30, "version": "1.5"},  # The gold standard example; from the Fig. 1 data
+        ]
+        assert mask_type_info in all_expected_mask_type_info, (
             "Unimplemented method detected for mask type."
-            f"\n\nReceived: {mask_type_info}"
-            f"\n\nExpected: {expected_mask_type_info}"
+            f"\n\nFull signal info: {json.dumps(obj=self.signal_info.info, indent=2)}"
             "\n\nPlease raise an issue to have the new mask type incorporated."
         )
 
@@ -81,7 +88,9 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
 
         if "PumpProbeImagingSpace" not in nwbfile.lab_meta_data:
             imaging_space = ndx_microscopy.PlanarImagingSpace(
-                name="PumpProbeImagingSpace", description="", microscope=microscope
+                name="PumpProbeImagingSpace",
+                description="The variable-depth imaging space scanned by the PumpProbe system.",
+                microscope=microscope,
             )
             nwbfile.add_lab_meta_data(lab_meta_data=imaging_space)
         else:
@@ -123,7 +132,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         # TODO: might prefer to combine plane segmentations over image segmentation objects
         # to reduce clutter
         image_segmentation = ndx_microscopy.MicroscopySegmentations(
-            name=f"PumpProbe{self.channel_name}ImageSegmentation", microscopy_plane_segmentations=[plane_segmentation]
+            name=f"PumpProbe{self.channel_name}Segmentations", microscopy_plane_segmentations=[plane_segmentation]
         )
 
         ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")
