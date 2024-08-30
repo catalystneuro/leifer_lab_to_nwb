@@ -114,6 +114,18 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             nwbfile.add_lab_meta_data(lab_meta_data=optical_channel)
             optical_channels.append(optical_channel)
 
+        light_sources_used_by_volume = pynwb.base.VectorData(
+            name="light_sources", description="Light sources used by this MultiChannelVolume.", data=light_sources
+        )
+        optical_channels_used_by_volume = pynwb.base.VectorData(
+            name="optical_channels",
+            description=(
+                "Optical channels ordered to correspond to the third axis (e.g., [0, 0, :, 0]) "
+                "of the data for this MultiChannelVolume."
+            ),
+            data=optical_channels,
+        )
+
         # Not exposing chunking/buffering control here for simplicity; note that a single frame is about 8 MB
         chunk_shape = (1, 1, self.data_shape[-2], self.data_shape[-1])
 
@@ -128,9 +140,9 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             name="NeuroPALImaging",
             description="A static volume scan used for NeuroPAL registration.",
             microscope=microscope,
-            light_sources=light_sources[0],  # TODO
+            light_sources=light_sources_used_by_volume,
             imaging_space=imaging_space,
-            optical_channels=optical_channels[0],  # TODO
+            optical_channels=optical_channels_used_by_volume,
             data=data_iterator,
             depth_per_frame_in_um=depth_per_frame_in_um,
             unit="n.a.",
