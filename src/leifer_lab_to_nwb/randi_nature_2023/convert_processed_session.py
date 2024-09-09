@@ -16,7 +16,7 @@ TESTING = True
 
 # Define base folder of source data
 # Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("G:/Leifer")
+BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
 SUBJECT_INFO_FILE_PATH = pathlib.Path("D:/Leifer/all_subjects_metadata.yaml")
 
 # The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry

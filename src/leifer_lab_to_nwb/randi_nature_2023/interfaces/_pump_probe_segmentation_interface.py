@@ -186,7 +186,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             plane_segmentation.add_row(
                 id=pump_probe_roi_id,
                 voxel_mask=voxel_mask,
-                centroids=[centroid],
+                centroids=centroid,
                 neuropal_ids=self.brains_info["labels"][labeled_frame_index][pump_probe_roi_id].replace(" ", ""),
             )
 
