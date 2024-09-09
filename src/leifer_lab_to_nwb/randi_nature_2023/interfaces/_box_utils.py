@@ -30,11 +30,11 @@ def _calculate_voxel_mask(
     full_box = None
     match {"method": method, "box_shape": box_shape}:
         case {"method": "box", "box_shape": (1, 3, 3)}:
-            full_box = box_size_to_array["(1, 3, 3)"]
+            full_box = numpy.array(box_size_to_array["(1,3,3)"])
         case {"method": "box", "box_shape": (3, 5, 5)}:
-            full_box = box_size_to_array["(3, 5, 5)"]
+            full_box = numpy.array(box_size_to_array["(3,5,5)"])
         case {"method": "box", "box_shape": (5, 5, 5)}:
-            full_box = box_size_to_array["(5, 5, 5)"]
+            full_box = numpy.array(box_size_to_array["(5,5,5)"])
 
     total_number_of_elements = math.prod(box_shape)
 

@@ -47,6 +47,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         all_expected_mask_type_info = [
             {"method": "box", "version": "v1.0"},  # Seen in earlier; usually .dirty; might still produce similar boxes
             {"method": "box", "version": "1.5"},  # The gold standard example; from the Fig. 1 data
+            {"method": "weightedMask", "version": "1.5"},  # Note however that the full mask is unavailable
         ]
         assert mask_type_info in all_expected_mask_type_info, (
             "Unimplemented method detected for mask type."
