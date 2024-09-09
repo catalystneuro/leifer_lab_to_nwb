@@ -1,6 +1,7 @@
 import json
 import pathlib
 import pickle
+import warnings
 from typing import Literal
 
 import ndx_microscopy
@@ -11,6 +12,7 @@ import pydantic
 import pynwb
 
 from ._globals import _DEFAULT_CHANNEL_NAMES
+from ._box_utils import _calculate_voxel_mask
 
 
 class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
@@ -43,7 +45,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         mask_type_info = {key: self.signal_info.info[key] for key in ["method", "version"]}
         mask_type_info["version"] = mask_type_info["version"].split("-")[0]
         all_expected_mask_type_info = [
-            {"method": "box", "version": "v1.0"},  # Seen in earlier; usually .dirty; might still produce similar box
+            {"method": "box", "version": "v1.0"},  # Seen in earlier; usually .dirty; might still produce similar boxes
             {"method": "box", "version": "1.5"},  # The gold standard example; from the Fig. 1 data
         ]
         assert mask_type_info in all_expected_mask_type_info, (
@@ -52,6 +54,13 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             "\n\nPlease raise an issue to have the new mask type incorporated."
         )
 
+        # Load the local box shape mapping
+        box_shape_file_path = pathlib.Path(__file__).parent.parent / "session_to_box_shape.json"
+        with open(file=box_shape_file_path, mode="r") as io:
+            box_shape_mapping = json.load(fp=io)
+        self.box_shape = box_shape_mapping[pump_probe_folder_path.name]
+
+        # Load general ROI metadata
         brains_file_path = pump_probe_folder_path / "brains.json"
         with open(brains_file_path, "r") as io:
             self.brains_info = json.load(fp=io)
@@ -108,6 +117,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             ),
             imaging_space=imaging_space,
         )
+        plane_segmentation.add_column(name="centroids", description="The centroids of each ROI.")
         plane_segmentation.add_column(
             name="neuropal_ids",
             description=(
@@ -148,13 +158,34 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         sub_start = sum(self.brains_info["nInVolume"][:labeled_frame_index])
         sub_coordinates = self.brains_info["coordZYX"][sub_start : (sub_start + number_of_rois)]
 
+        mask_type = self.signal_info.info["method"]
+        if mask_type == "weightedMask":
+            message = (
+                "Detected ROI mask type 'weightedMask' - because the associated 'weights' have never been seen "
+                "dumped to the 'analysis.log', we cannot reconstruct the proper NWB voxel masks."
+                "Only the centroids will be written as the mask coordinates."
+            )
+            warnings.warn(message=message, stacklevel=3)
+
         for pump_probe_roi_id in range(number_of_rois):
-            coordinate_info = sub_coordinates[pump_probe_roi_id]
-            coordinates = (coordinate_info[2], coordinate_info[1], coordinate_info[0], 1.0)
+            centroid_info = sub_coordinates[pump_probe_roi_id]
+            centroid = (centroid_info[2], centroid_info[1], centroid_info[0])
+
+            if mask_type == "box" and tuple(self.box_shape) not in ((1, 3, 3), (3, 5, 5), (5, 5, 5)):
+                message = f"Box shape {self.box_shape} has not been implemented."
+                raise NotImplementedError(message)
+
+            if mask_type == "box":
+                voxel_mask = _calculate_voxel_mask(
+                    centroid_zyx=centroid_info, box_shape=self.box_shape, method=mask_type
+                )
+            elif mask_type == "weightedMask":
+                voxel_mask = [centroid]
 
             plane_segmentation.add_row(
                 id=pump_probe_roi_id,
-                voxel_mask=[coordinates],
+                voxel_mask=voxel_mask,
+                centroids=[centroid],
                 neuropal_ids=self.brains_info["labels"][labeled_frame_index][pump_probe_roi_id].replace(" ", ""),
             )
 

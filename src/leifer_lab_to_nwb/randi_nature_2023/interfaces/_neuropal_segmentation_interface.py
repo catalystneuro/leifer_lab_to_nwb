@@ -6,6 +6,8 @@ import neuroconv
 import pydantic
 import pynwb
 
+from ._box_utils import _calculate_voxel_mask
+
 
 class NeuroPALSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
 
@@ -39,6 +41,12 @@ class NeuroPALSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfac
             and self.brains_info["nInVolume"][0] == len(self.brains_info["labels_comments"][0])
         ), "Length of contents does not match number of ROIs."
 
+        # Load the local box shape mapping
+        box_shape_file_path = pathlib.Path(__file__).parent.parent / "session_to_box_shape.json"
+        with open(file=box_shape_file_path, mode="r") as io:
+            box_shape_mapping = json.load(fp=io)
+        self.box_shape = box_shape_mapping[multicolor_folder_path.name]
+
     def add_to_nwbfile(
         self,
         *,
@@ -65,6 +73,7 @@ class NeuroPALSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfac
             description="The NeuroPAL segmentation of the C. elegans brain with cell labels.",
             imaging_space=imaging_space,
         )
+        plane_segmentation.add_column(name="centroids", description="The centroids of each ROI.")
         plane_segmentation.add_column(
             name="labels",
             description="The C. elegans cell names labeled from the NeuroPAL imaging.",
@@ -80,12 +89,19 @@ class NeuroPALSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfac
 
         number_of_rois = self.brains_info["nInVolume"][0]
         for neuropal_roi_id in range(number_of_rois):
-            coordinate_info = self.brains_info["coordZYX"][neuropal_roi_id]
-            coordinates = (coordinate_info[2], coordinate_info[1], coordinate_info[0], 1.0)
+            centroid_info = self.brains_info["coordZYX"][neuropal_roi_id]
+            centroid = (centroid_info[2], centroid_info[1], centroid_info[0])
+
+            if tuple(self.box_shape) not in ((1, 3, 3), (3, 5, 5), (5, 5, 5)):
+                message = f"Box shape {self.box_shape} has not been implemented."
+                raise NotImplementedError(message)
+
+            voxel_mask = _calculate_voxel_mask(centroid_zyx=centroid_info, box_shape=self.box_shape, method="box")
 
             plane_segmentation.add_row(
                 id=neuropal_roi_id,
-                voxel_mask=[coordinates],
+                voxel_mask=voxel_mask,
+                centroids=[centroid],
                 labels=self.brains_info["labels"][0][neuropal_roi_id],
                 labels_confidences=self.brains_info["labels_confidences"][0][neuropal_roi_id],
                 labels_comments=self.brains_info["labels_comments"][0][neuropal_roi_id],

@@ -67,7 +67,7 @@ def pump_probe_to_nwb(
 
     if pump_probe_folder_path.exists() is False:
         message = f"Could not find source data at '{pump_probe_folder_path}' - skipping!"
-        warnings.warn(message=message, stacklevel=2)
+        warnings.warn(message=message, stacklevel=3)
         return None
 
     # Parse session start time from the pumpprobe path
