@@ -1,6 +1,7 @@
 import json
 import pathlib
 import pickle
+import warnings
 from typing import Literal
 
 import ndx_microscopy
@@ -11,6 +12,7 @@ import pydantic
 import pynwb
 
 from ._globals import _DEFAULT_CHANNEL_NAMES
+from ._box_utils import _calculate_voxel_mask
 
 
 class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterface):
@@ -38,10 +40,13 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         with open(file=signal_file_path, mode="rb") as io:
             self.signal_info = pickle.load(file=io)
 
-        mask_type_info = {key: self.signal_info.info[key] for key in ["method", "ref_index", "version"]}
+        # Ignore ref_index from the mask info since that varies quite a bit (it's the frame index used for labels)
+        # And strip extra version attachments
+        mask_type_info = {key: self.signal_info.info[key] for key in ["method", "version"]}
+        mask_type_info["version"] = mask_type_info["version"].split("-")[0]
         all_expected_mask_type_info = [
-            {"method": "box", "ref_index": 1468, "version": "v1.0-50-g5ba2f9c.dirty"},
-            {"method": "box", "ref_index": 30, "version": "1.5"},  # The gold standard example; from the Fig. 1 data
+            {"method": "box", "version": "v1.0"},  # Seen in earlier; usually .dirty; might still produce similar boxes
+            {"method": "box", "version": "1.5"},  # The gold standard example; from the Fig. 1 data
         ]
         assert mask_type_info in all_expected_mask_type_info, (
             "Unimplemented method detected for mask type."
@@ -49,6 +54,13 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             "\n\nPlease raise an issue to have the new mask type incorporated."
         )
 
+        # Load the local box shape mapping
+        box_shape_file_path = pathlib.Path(__file__).parent.parent / "session_to_box_shape.json"
+        with open(file=box_shape_file_path, mode="r") as io:
+            box_shape_mapping = json.load(fp=io)
+        self.box_shape = box_shape_mapping[pump_probe_folder_path.name]
+
+        # Load general ROI metadata
         brains_file_path = pump_probe_folder_path / "brains.json"
         with open(brains_file_path, "r") as io:
             self.brains_info = json.load(fp=io)
@@ -105,6 +117,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             ),
             imaging_space=imaging_space,
         )
+        plane_segmentation.add_column(name="centroids", description="The centroids of each ROI.")
         plane_segmentation.add_column(
             name="neuropal_ids",
             description=(
@@ -112,25 +125,70 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             ),
         )
 
-        # There are coords for each 'nInVolume', but only the ones for the span of the 30th frame are used
-        number_of_rois = self.signal_info.data.shape[1]
-        labeled_frame_index = 30
+        # In most sessions, the labeled frame index is fixed to be the 30th frame
+        # But there are many others where this is not the case
+        labeled_frame_indices = [
+            index for index, frame_labels in enumerate(self.brains_info["labels"]) if len(frame_labels) != 0
+        ]
+        if len(labeled_frame_indices) == 0:
+            raise ValueError("No labeled frames found in the 'brains.json' file.")
+        if len(labeled_frame_indices) > 1:
+            raise ValueError("More than one labeled frame in the 'brains.json' file.")
+        labeled_frame_index = labeled_frame_indices[0]
+
+        # Check for possible file mismatches based on recorded metadata
+        if self.signal_info.info["ref_index"] != labeled_frame_index:
+            message = (
+                "Mismatch in the labeled frame index between the signal "
+                f"({self.signal_info.info['ref_index']}) and brains ({labeled_frame_index}) files!"
+            )
+            raise ValueError(message)
+
+        # There are coords for each 'nInVolume', but only the ones for the span of the labeled frames are used
+        number_of_rois_from_signal = self.signal_info.data.shape[1]
+        number_of_rois_from_brains = self.brains_info["nInVolume"][labeled_frame_index]
+        if number_of_rois_from_signal != number_of_rois_from_brains:
+            message = (
+                "Mismatch in the number of ROIs between the signal "
+                f"({number_of_rois_from_signal}) and brains ({number_of_rois_from_brains}) files!"
+            )
+            raise ValueError(message)
+        number_of_rois = number_of_rois_from_signal
+
         sub_start = sum(self.brains_info["nInVolume"][:labeled_frame_index])
         sub_coordinates = self.brains_info["coordZYX"][sub_start : (sub_start + number_of_rois)]
 
-        number_of_rois = self.brains_info["nInVolume"][labeled_frame_index]
+        mask_type = self.signal_info.info["method"]
+        if mask_type == "weightedMask":
+            message = (
+                "Detected ROI mask type 'weightedMask' - because the associated 'weights' have never been seen "
+                "dumped to the 'analysis.log', we cannot reconstruct the proper NWB voxel masks."
+                "Only the centroids will be written as the mask coordinates."
+            )
+            warnings.warn(message=message, stacklevel=3)
+
         for pump_probe_roi_id in range(number_of_rois):
-            coordinate_info = sub_coordinates[pump_probe_roi_id]
-            coordinates = (coordinate_info[2], coordinate_info[1], coordinate_info[0], 1.0)
+            centroid_info = sub_coordinates[pump_probe_roi_id]
+            centroid = (centroid_info[2], centroid_info[1], centroid_info[0])
+
+            if mask_type == "box" and tuple(self.box_shape) not in ((1, 3, 3), (3, 5, 5), (5, 5, 5)):
+                message = f"Box shape {self.box_shape} has not been implemented."
+                raise NotImplementedError(message)
+
+            if mask_type == "box":
+                voxel_mask = _calculate_voxel_mask(
+                    centroid_zyx=centroid_info, box_shape=self.box_shape, method=mask_type
+                )
+            elif mask_type == "weightedMask":
+                voxel_mask = [centroid]
 
             plane_segmentation.add_row(
                 id=pump_probe_roi_id,
-                voxel_mask=[coordinates],  # TODO: add rest of box
+                voxel_mask=voxel_mask,
+                centroids=[centroid],
                 neuropal_ids=self.brains_info["labels"][labeled_frame_index][pump_probe_roi_id].replace(" ", ""),
             )
 
-        # TODO: might prefer to combine plane segmentations over image segmentation objects
-        # to reduce clutter
         image_segmentation = ndx_microscopy.MicroscopySegmentations(
             name=f"PumpProbe{self.channel_name}Segmentations", microscopy_plane_segmentations=[plane_segmentation]
         )
@@ -150,10 +208,10 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
                 f"Average baseline fluorescence for the '{self.channel_name}' optical channel extracted from the raw "
                 "imaging and averaged over a volume defined as a complete scan cycle over volumetric depths."
             ),
-            data=self.signal_info.data,
+            data=self.signal_info.data[:stub_frames, :],
             table_region=plane_segmentation_region,
             unit="n.a.",
-            timestamps=self.timestamps_per_volume,
+            timestamps=self.timestamps_per_volume[:stub_frames],
         )
 
         # TODO: should probably combine all of these into a single container

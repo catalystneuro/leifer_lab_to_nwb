@@ -16,12 +16,21 @@ TESTING = True
 
 # Define base folder of source data
 # Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
-SUBJECT_INFO_FILE_PATH = BASE_FOLDER_PATH / "all_subjects_metadata.yaml"
+BASE_FOLDER_PATH = pathlib.Path("G:/Leifer")
+SUBJECT_INFO_FILE_PATH = pathlib.Path("D:/Leifer/all_subjects_metadata.yaml")
 
 # The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry
 # For testing, subject ID '26' matches date '20211104' used in Figure 1 of the paper
 SUBJECT_ID = 26
+
+# 20 is a good example of mismatch between signal data shape and ROI labels
+# SUBJECT_ID = 20
+
+# 33 has an issue with timestamps length in ogen
+# SUBJECT_ID = 33
+
+# 79 is the first example of the 'weightedMask' ROI type
+# SUBJECT_ID = 79
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"

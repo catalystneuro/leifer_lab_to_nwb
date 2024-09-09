@@ -65,6 +65,11 @@ def pump_probe_to_nwb(
     pump_probe_folder_path = session_folder_path / subject_info["pump_probe_folder"]
     multicolor_folder_path = session_folder_path / subject_info["multicolor_folder"]
 
+    if pump_probe_folder_path.exists() is False:
+        message = f"Could not find source data at '{pump_probe_folder_path}' - skipping!"
+        warnings.warn(message=message, stacklevel=3)
+        return None
+
     # Parse session start time from the pumpprobe path
     session_string = pump_probe_folder_path.stem.removeprefix("pumpprobe_")
     session_start_time = datetime.datetime.strptime(session_string, "%Y%m%d_%H%M%S")
