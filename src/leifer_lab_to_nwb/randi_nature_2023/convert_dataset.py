@@ -9,14 +9,14 @@ import yaml
 from leifer_lab_to_nwb.randi_nature_2023 import pump_probe_to_nwb
 
 # TESTING=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
-TESTING = True
+# TESTING = True
 
 # TESTING=False performs a full file conversion
-# TESTING = False
+TESTING = False
 
 # Define base folder of source data
 # Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("G:/Leifer")
+BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
 SUBJECT_INFO_FILE_PATH = pathlib.Path("D:/Leifer/all_subjects_metadata.yaml")
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
@@ -24,6 +24,12 @@ NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
 ERROR_FOLDER = NWB_OUTPUT_FOLDER_PATH / "errors"
 COMPLETED_RAW_FILE_PATH = NWB_OUTPUT_FOLDER_PATH / "completed_raw_sessions.txt"
 LIMIT_RAW = 10
+
+SKIP_PROCESSED_SUBJECT_IDS = [
+    20,  # Data mismatches: https://github.com/catalystneuro/leifer_lab_to_nwb/issues/39
+    23,
+    33,  # Timestamp length issue: https://github.com/catalystneuro/leifer_lab_to_nwb/issues/40
+]
 
 if __name__ == "__main__":
     NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
@@ -35,7 +41,7 @@ if __name__ == "__main__":
     completed_raw_sessions = []
     if COMPLETED_RAW_FILE_PATH.exists() and TESTING is False:
         with open(file=COMPLETED_RAW_FILE_PATH, mode="r") as io:
-            completed_raw_sessions = io.readlines()
+            completed_raw_sessions = [x.strip() for x in io.readlines()]
 
     # Check YAML for integrity
     for subject_key, subject_info in all_subject_info.items():
@@ -59,6 +65,9 @@ if __name__ == "__main__":
         mininterval=5.0,
         smoothing=0,
     ):
+        if subject_key in SKIP_PROCESSED_SUBJECT_IDS:
+            continue
+
         try:
             pump_probe_to_nwb(
                 base_folder_path=BASE_FOLDER_PATH,
@@ -96,7 +105,7 @@ if __name__ == "__main__":
         try:
             if raw_counter >= LIMIT_RAW:
                 break
-            if subject_key in completed_raw_sessions:
+            if str(subject_key) in completed_raw_sessions:
                 continue
 
             pump_probe_to_nwb(
@@ -112,7 +121,7 @@ if __name__ == "__main__":
                 raw_counter += 1
 
                 with open(file=COMPLETED_RAW_FILE_PATH, mode="a") as io:
-                    io.writeline(f"{subject_key}\n")
+                    io.write(f"{subject_key}\n")
         except Exception as exception:
             error_file_path = ERROR_FOLDER / f"{subject_key}_{raw_or_processed}_testing={TESTING}_error.txt"
             message = (

@@ -30,7 +30,7 @@ SUBJECT_ID = 26
 # SUBJECT_ID = 33
 
 # 79 is the first example of the 'weightedMask' ROI type
-# SUBJECT_ID = 79
+SUBJECT_ID = 79
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"

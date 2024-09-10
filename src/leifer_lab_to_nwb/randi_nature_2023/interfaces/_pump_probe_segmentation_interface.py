@@ -47,6 +47,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         all_expected_mask_type_info = [
             {"method": "box", "version": "v1.0"},  # Seen in earlier; usually .dirty; might still produce similar boxes
             {"method": "box", "version": "1.5"},  # The gold standard example; from the Fig. 1 data
+            {"method": "weightedMask", "version": "1.5"},  # Note however that the full mask is unavailable
         ]
         assert mask_type_info in all_expected_mask_type_info, (
             "Unimplemented method detected for mask type."
@@ -89,9 +90,10 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         nwbfile: pynwb.NWBFile,
         metadata: dict | None = None,
         stub_test: bool = False,
-        stub_frames: int = 70,
+        stub_frames: int | None = None,
     ) -> None:
-        # TODO: probably centralize this in a helper function
+        stub_frames = 70 if stub_test is True else None
+
         if "Microscope" not in nwbfile.devices:
             microscope = ndx_microscopy.Microscope(name="Microscope")
             nwbfile.add_device(devices=microscope)
@@ -180,12 +182,12 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
                     centroid_zyx=centroid_info, box_shape=self.box_shape, method=mask_type
                 )
             elif mask_type == "weightedMask":
-                voxel_mask = [centroid]
+                voxel_mask = [(centroid[0], centroid[1], centroid[2], 1.0)]
 
             plane_segmentation.add_row(
                 id=pump_probe_roi_id,
                 voxel_mask=voxel_mask,
-                centroids=[centroid],
+                centroids=centroid,
                 neuropal_ids=self.brains_info["labels"][labeled_frame_index][pump_probe_roi_id].replace(" ", ""),
             )
 

@@ -101,7 +101,7 @@ class NeuroPALSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfac
             plane_segmentation.add_row(
                 id=neuropal_roi_id,
                 voxel_mask=voxel_mask,
-                centroids=[centroid],
+                centroids=centroid,
                 labels=self.brains_info["labels"][0][neuropal_roi_id],
                 labels_confidences=self.brains_info["labels_confidences"][0][neuropal_roi_id],
                 labels_comments=self.brains_info["labels_comments"][0][neuropal_roi_id],

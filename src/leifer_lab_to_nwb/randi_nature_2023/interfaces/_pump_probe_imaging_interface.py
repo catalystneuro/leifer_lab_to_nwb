@@ -110,8 +110,10 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         stub_test: bool = False,
         stub_frames: int = 70,
         display_progress: bool = True,
+        progress_bar_options: dict | None = None,
     ) -> None:
-        # TODO: enhance all metadata
+        progress_bar_options = progress_bar_options or dict()
+
         if "Microscope" not in nwbfile.devices:
             microscope = ndx_microscopy.Microscope(name="Microscope")
             nwbfile.add_device(devices=microscope)
@@ -136,7 +138,9 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
 
         optical_channel = ndx_microscopy.MicroscopyOpticalChannel(
             name=f"{self.channel_name}OpticalChannel",
-            description="An optical filter applied to the functional recording (distinct from the NeuroPAL registration).",
+            description=(
+                "An optical filter applied to the functional recording (distinct from the NeuroPAL registration)."
+            ),
             indicator="GCaMP6s",
         )
         nwbfile.add_lab_meta_data(lab_meta_data=optical_channel)
@@ -149,14 +153,18 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         chunk_size_bytes = 10.0 * 1e6  # 10 MB default
         num_frames_per_chunk = int(chunk_size_bytes / frame_size_bytes)
         chunk_shape = (max(min(num_frames_per_chunk, num_frames), 1), x, y)
-        buffer_shape = (min(chunk_shape[0] * 100, num_frames), x, y)  # 1 GB by default
+        buffer_shape = (min(chunk_shape[0] * 100 * 10, num_frames), x, y)  # 10 GB by default
 
         imaging_data = (
             self.imaging_data_for_channel if not stub_test else self.imaging_data_for_channel[:stub_frames, ...]
         )
         data_iterator = pynwb.H5DataIO(
             neuroconv.tools.hdmf.SliceableDataChunkIterator(
-                data=imaging_data, chunk_shape=chunk_shape, buffer_shape=buffer_shape, display_progress=display_progress
+                data=imaging_data,
+                chunk_shape=chunk_shape,
+                buffer_shape=buffer_shape,
+                display_progress=display_progress,
+                progress_bar_options=progress_bar_options,
             ),
             compression="gzip",
         )
