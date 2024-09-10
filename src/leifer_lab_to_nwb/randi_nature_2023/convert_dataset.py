@@ -121,7 +121,7 @@ if __name__ == "__main__":
                 raw_counter += 1
 
                 with open(file=COMPLETED_RAW_FILE_PATH, mode="a") as io:
-                    io.writeline(f"{subject_key}\n")
+                    io.write(f"{subject_key}\n")
         except Exception as exception:
             error_file_path = ERROR_FOLDER / f"{subject_key}_{raw_or_processed}_testing={TESTING}_error.txt"
             message = (
