@@ -153,7 +153,7 @@ class PumpProbeImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         chunk_size_bytes = 10.0 * 1e6  # 10 MB default
         num_frames_per_chunk = int(chunk_size_bytes / frame_size_bytes)
         chunk_shape = (max(min(num_frames_per_chunk, num_frames), 1), x, y)
-        buffer_shape = (min(chunk_shape[0] * 100 * 10, num_frames), x, y)  # 1 GB by default
+        buffer_shape = (min(chunk_shape[0] * 100 * 10, num_frames), x, y)  # 10 GB by default
 
         imaging_data = (
             self.imaging_data_for_channel if not stub_test else self.imaging_data_for_channel[:stub_frames, ...]
