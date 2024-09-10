@@ -90,9 +90,10 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
         nwbfile: pynwb.NWBFile,
         metadata: dict | None = None,
         stub_test: bool = False,
-        stub_frames: int = 70,
+        stub_frames: int | None = None,
     ) -> None:
-        # TODO: probably centralize this in a helper function
+        stub_frames = 70 if stub_test is True else None
+
         if "Microscope" not in nwbfile.devices:
             microscope = ndx_microscopy.Microscope(name="Microscope")
             nwbfile.add_device(devices=microscope)
@@ -181,7 +182,7 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
                     centroid_zyx=centroid_info, box_shape=self.box_shape, method=mask_type
                 )
             elif mask_type == "weightedMask":
-                voxel_mask = [centroid]
+                voxel_mask = [(centroid[0], centroid[1], centroid[2], 1.0)]
 
             plane_segmentation.add_row(
                 id=pump_probe_roi_id,

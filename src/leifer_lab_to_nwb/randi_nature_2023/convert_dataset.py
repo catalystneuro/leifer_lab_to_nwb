@@ -9,10 +9,10 @@ import yaml
 from leifer_lab_to_nwb.randi_nature_2023 import pump_probe_to_nwb
 
 # TESTING=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
-TESTING = True
+# TESTING = True
 
 # TESTING=False performs a full file conversion
-# TESTING = False
+TESTING = False
 
 # Define base folder of source data
 # Change these as needed on new systems
@@ -23,7 +23,13 @@ OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
 ERROR_FOLDER = NWB_OUTPUT_FOLDER_PATH / "errors"
 COMPLETED_RAW_FILE_PATH = NWB_OUTPUT_FOLDER_PATH / "completed_raw_sessions.txt"
-LIMIT_RAW = 10
+LIMIT_RAW = 30
+
+SKIP_PROCESSED_SUBJECT_IDS = [
+    20,  # Data mismatches: https://github.com/catalystneuro/leifer_lab_to_nwb/issues/39
+    23,
+    33,  # Timestamp length issue: https://github.com/catalystneuro/leifer_lab_to_nwb/issues/40
+]
 
 if __name__ == "__main__":
     NWB_OUTPUT_FOLDER_PATH.mkdir(exist_ok=True)
@@ -59,6 +65,9 @@ if __name__ == "__main__":
         mininterval=5.0,
         smoothing=0,
     ):
+        if subject_key in SKIP_PROCESSED_SUBJECT_IDS:
+            continue
+
         try:
             pump_probe_to_nwb(
                 base_folder_path=BASE_FOLDER_PATH,
