@@ -23,7 +23,7 @@ OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
 ERROR_FOLDER = NWB_OUTPUT_FOLDER_PATH / "errors"
 COMPLETED_RAW_FILE_PATH = NWB_OUTPUT_FOLDER_PATH / "completed_raw_sessions.txt"
-LIMIT_RAW = 30
+LIMIT_RAW = 10
 
 SKIP_PROCESSED_SUBJECT_IDS = [
     20,  # Data mismatches: https://github.com/catalystneuro/leifer_lab_to_nwb/issues/39
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     completed_raw_sessions = []
     if COMPLETED_RAW_FILE_PATH.exists() and TESTING is False:
         with open(file=COMPLETED_RAW_FILE_PATH, mode="r") as io:
-            completed_raw_sessions = io.readlines()
+            completed_raw_sessions = [x.strip() for x in io.readlines()]
 
     # Check YAML for integrity
     for subject_key, subject_info in all_subject_info.items():
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         try:
             if raw_counter >= LIMIT_RAW:
                 break
-            if subject_key in completed_raw_sessions:
+            if str(subject_key) in completed_raw_sessions:
                 continue
 
             pump_probe_to_nwb(

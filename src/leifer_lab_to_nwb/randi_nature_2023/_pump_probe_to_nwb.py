@@ -105,7 +105,7 @@ def pump_probe_to_nwb(
             "NeuroPALImagingInterface": {"multicolor_folder_path": multicolor_folder_path},
         }
 
-        progress_bar_options = {"position": 1, "leave": False, "unit": "buffers"}
+        progress_bar_options = {"position": 1, "leave": False, "unit": "buffer"}
         conversion_options = {
             "PumpProbeImagingInterfaceGreen": {"stub_test": testing, "progress_bar_options": progress_bar_options},
             "PumpProbeImagingInterfaceRed": {"stub_test": testing, "progress_bar_options": progress_bar_options},
