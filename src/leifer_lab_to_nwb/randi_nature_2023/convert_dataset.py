@@ -16,14 +16,14 @@ TESTING = False
 
 # Define base folder of source data
 # Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
+BASE_FOLDER_PATH = pathlib.Path("G:/Leifer")
 SUBJECT_INFO_FILE_PATH = pathlib.Path("D:/Leifer/all_subjects_metadata.yaml")
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
 ERROR_FOLDER = NWB_OUTPUT_FOLDER_PATH / "errors"
 COMPLETED_RAW_FILE_PATH = NWB_OUTPUT_FOLDER_PATH / "completed_raw_sessions.txt"
-LIMIT_RAW = 10
+LIMIT_RAW = 40
 
 SKIP_PROCESSED_SUBJECT_IDS = [
     20,  # Data mismatches: https://github.com/catalystneuro/leifer_lab_to_nwb/issues/39
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         except Exception as exception:
             error_file_path = ERROR_FOLDER / f"{subject_key}_{raw_or_processed}_testing={TESTING}_error.txt"
             message = (
-                f"Error encountered during conversion of processed session '{subject_key}'!\n\n"
+                f"Error encountered during conversion of raw session '{subject_key}'!\n\n"
                 f"{type(exception)}: {str(exception)}\n\n"
                 f"{traceback.format_exc()}"
             )
