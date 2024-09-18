@@ -132,7 +132,8 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
         data_iterator = neuroconv.tools.hdmf.SliceableDataChunkIterator(data=imaging_data, chunk_shape=chunk_shape)
         data_iterator = pynwb.H5DataIO(data_iterator, compression="gzip")
 
-        depth_per_frame_in_um = self.brains_info["zOfFrame"][0]
+        source_depths = self.brains_info["zOfFrame"][0]
+        depth_per_frame_in_um = source_depths if not stub_test else source_depths[:stub_depths]
 
         light_sources_used_by_volume = pynwb.base.VectorData(
             name="light_sources", description="Light sources used by this MultiChannelVolume.", data=light_sources
@@ -153,7 +154,7 @@ class NeuroPALImagingInterface(neuroconv.basedatainterface.BaseDataInterface):
             imaging_space=imaging_space,
             optical_channels=optical_channels_used_by_volume,
             data=data_iterator,
-            depth_per_frame_in_um=depth_per_frame_in_um[:stub_depths],
+            depth_per_frame_in_um=depth_per_frame_in_um,
             unit="n.a.",
         )
         nwbfile.add_acquisition(multi_channel_microscopy_volume)
