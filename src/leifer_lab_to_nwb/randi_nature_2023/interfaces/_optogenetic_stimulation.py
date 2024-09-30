@@ -31,6 +31,11 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
         self.timestamps_table = pandas.read_table(filepath_or_buffer=timestamps_file_path, index_col=False)
         self.timestamps = numpy.array(self.timestamps_table["Timestamp"])
 
+        target_pumpprobe_ids_file_path = pump_probe_folder_path / "targets_manually_located.txt"
+        self.target_pumpprobe_ids = pandas.read_table(
+            filepath_or_buffer=target_pumpprobe_ids_file_path, header=0, index_col=False
+        ).to_numpy()[:, 0]
+
     def add_to_nwbfile(
         self,
         *,
@@ -154,6 +159,15 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
                 "identities were assigned to stimulated neurons after the completion of experiments using NeuroPAL."
             ),
         )
+
+        stimulus_table.add_column(
+            name="target_pumpprobe_id",
+            description=(
+                "Manually targeted ID in the PumpProbe space. "
+                "Values are upcast to float to allow NaN; cast back to int to lookup correspond NeuroPAL label."
+            ),
+        )
+
         for index, start_time_in_s in enumerate(stimulus_start_times_in_s):
             targeted_roi_reference = targeted_plane_segmentation.create_roi_table_region(
                 name="targeted_rois", description="The targeted ROI.", region=[index]
@@ -164,6 +178,11 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
             )
             nwbfile.add_lab_meta_data(stimulus_target)
 
+            # Cast to NaN to indicate not manually located or failed targeting
+            target_pumpprobe_id = (
+                float(self.target_pumpprobe_ids[index]) if self.target_pumpprobe_ids[index] > 0 else numpy.nan
+            )
+
             stimulus_table.add_interval(
                 start_time=start_time_in_s,
                 stop_time=start_time_in_s + stimulus_duration_in_s,
@@ -171,5 +190,6 @@ class OptogeneticStimulationInterface(neuroconv.BaseDataInterface):
                 stimulus_pattern=temporal_focusing,
                 stimulus_site=site,
                 power=1.2 / 1e3,  # Hardcoded from the paper; TODO: should be 'power_in_W'
+                target_pumpprobe_id=target_pumpprobe_id,
             )
         nwbfile.add_time_intervals(stimulus_table)

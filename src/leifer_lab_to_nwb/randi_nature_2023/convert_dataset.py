@@ -23,7 +23,7 @@ OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"
 ERROR_FOLDER = NWB_OUTPUT_FOLDER_PATH / "errors"
 COMPLETED_RAW_FILE_PATH = NWB_OUTPUT_FOLDER_PATH / "completed_raw_sessions.txt"
-LIMIT_RAW = 40
+LIMIT_RAW = 0
 
 SKIP_PROCESSED_SUBJECT_IDS = [
     20,  # Data mismatches: https://github.com/catalystneuro/leifer_lab_to_nwb/issues/39

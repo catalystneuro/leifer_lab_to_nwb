@@ -16,7 +16,7 @@ TESTING = True
 
 # Define base folder of source data
 # Change these as needed on new systems
-BASE_FOLDER_PATH = pathlib.Path("G:/Leifer")
+BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
 SUBJECT_INFO_FILE_PATH = pathlib.Path("D:/Leifer/all_subjects_metadata.yaml")
 
 # The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry
@@ -30,7 +30,7 @@ SUBJECT_ID = 26
 # SUBJECT_ID = 33
 
 # 79 is the first example of the 'weightedMask' ROI type
-SUBJECT_ID = 79
+# SUBJECT_ID = 79
 
 OUTPUT_FOLDER_PATH = pathlib.Path("E:/Leifer")
 NWB_OUTPUT_FOLDER_PATH = OUTPUT_FOLDER_PATH / "nwbfiles"

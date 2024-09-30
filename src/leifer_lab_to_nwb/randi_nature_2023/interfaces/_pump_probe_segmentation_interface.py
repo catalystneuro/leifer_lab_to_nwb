@@ -195,7 +195,9 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             name=f"PumpProbe{self.channel_name}Segmentations", microscopy_plane_segmentations=[plane_segmentation]
         )
 
-        ophys_module = neuroconv.tools.nwb_helpers.get_module(nwbfile=nwbfile, name="ophys")
+        ophys_module = neuroconv.tools.nwb_helpers.get_module(
+            nwbfile=nwbfile, name="ophys", description="Contains segmented imaging data."
+        )
         ophys_module.add(image_segmentation)
 
         plane_segmentation_region = pynwb.ophys.DynamicTableRegion(
