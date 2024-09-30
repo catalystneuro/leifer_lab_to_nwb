@@ -8,10 +8,10 @@ import pathlib
 from leifer_lab_to_nwb.randi_nature_2023 import pump_probe_to_nwb
 
 # TESTING=True creates 'preview' files that truncate all major data blocks; useful for ensuring process runs smoothly
-TESTING = True
+# TESTING = True
 
 # TESTING=False performs a full file conversion
-# TESTING = False
+TESTING = False
 
 
 # Define base folder of source data
@@ -19,7 +19,7 @@ TESTING = True
 BASE_FOLDER_PATH = pathlib.Path("D:/Leifer")
 SUBJECT_INFO_FILE_PATH = pathlib.Path("D:/Leifer/all_subjects_metadata.yaml")
 
-# The integer ID that maps this subject onto the 'all_subect_metadata.yaml' entry
+# The integer ID that maps this subject onto the 'all_subject_metadata.yaml' entry
 # For testing, subject ID '26' matches date '20211104' used in Figure 1 of the paper
 SUBJECT_ID = 26
 

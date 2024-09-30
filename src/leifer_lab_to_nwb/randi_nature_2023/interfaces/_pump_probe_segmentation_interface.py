@@ -206,20 +206,56 @@ class PumpProbeSegmentationInterface(neuroconv.basedatainterface.BaseDataInterfa
             data=[x for x in range(number_of_rois)],
             table=plane_segmentation,
         )
-        microscopy_response_series = ndx_microscopy.MicroscopyResponseSeries(
-            name=f"{self.channel_name}Signal",
-            description=(
-                f"Average baseline fluorescence for the '{self.channel_name}' optical channel extracted from the raw "
-                "imaging and averaged over a volume defined as a complete scan cycle over volumetric depths."
-            ),
-            data=self.signal_info.data[:stub_frames, :],
-            table_region=plane_segmentation_region,
-            unit="n.a.",
-            timestamps=self.timestamps_per_volume[:stub_frames],
-        )
 
-        # TODO: should probably combine all of these into a single container
-        container = ndx_microscopy.MicroscopyResponseSeriesContainer(
-            name=f"{self.channel_name}Signals", microscopy_response_series=[microscopy_response_series]
+        roi_description = (
+            f"Average baseline fluorescence for the '{self.channel_name}' optical channel extracted from the raw "
+            "imaging and averaged over a volume defined as a complete scan cycle over volumetric depths."
         )
+        if self.signal_info.nan_interpolated:
+            base_roi_description = roi_description + (
+                " This series includes NaNs for certain frame values that could not be inferred from the imaging data."
+            )
+            base_data = self.signal_info.data[:stub_frames, :].copy()
+            base_data[self.signal_info.nan_mask[:stub_frames, :]] = numpy.nan
+            base_microscopy_response_series = ndx_microscopy.MicroscopyResponseSeries(
+                name=f"Base{self.channel_name}Signal",
+                description=base_roi_description,
+                data=base_data,
+                table_region=plane_segmentation_region,
+                unit="n.a.",
+                timestamps=self.timestamps_per_volume[:stub_frames],
+            )
+
+            interpolated_roi_description = roi_description + (
+                " This series has interpolated the NaN frames in the corresponding 'base' signal."
+            )
+            interpolated_microscopy_response_series = ndx_microscopy.MicroscopyResponseSeries(
+                name=f"Interpolated{self.channel_name}Signal",
+                description=interpolated_roi_description,
+                data=self.signal_info.data[:stub_frames, :],
+                table_region=plane_segmentation_region,
+                unit="n.a.",
+                timestamps=self.timestamps_per_volume[:stub_frames],
+            )
+
+            # TODO: should probably combine all of these into a single container
+            container = ndx_microscopy.MicroscopyResponseSeriesContainer(
+                name=f"{self.channel_name}Signals",
+                microscopy_response_series=[base_microscopy_response_series, interpolated_microscopy_response_series],
+            )
+        else:
+            microscopy_response_series = ndx_microscopy.MicroscopyResponseSeries(
+                name=f"{self.channel_name}Signal",
+                description=roi_description,
+                data=self.signal_info.data[:stub_frames, :],
+                table_region=plane_segmentation_region,
+                unit="n.a.",
+                timestamps=self.timestamps_per_volume[:stub_frames],
+            )
+
+            # TODO: should probably combine all of these into a single container
+            container = ndx_microscopy.MicroscopyResponseSeriesContainer(
+                name=f"{self.channel_name}Signals", microscopy_response_series=[microscopy_response_series]
+            )
+
         ophys_module.add(container)
